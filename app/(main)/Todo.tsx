@@ -12,9 +12,9 @@ import ConfirmDialog from '@/components/common/ConfirmDialog';
 import UndoSnackbar from '@/components/feedback/UndoSnackbar';
 import SelectionBar from '@/components/notes/SelectionBar';
 
+import FAB from '@/components/common/FAB';
 import NotesToolbar from '@/components/notes/NotesToolbar';
 import CreateTodoDialog, { TodoPayload } from '@/components/todo/CreateTodoDialog';
-import TodoFab from '@/components/todo/TodoFab';
 import TodoList from '@/components/todo/TodoList';
 
 export default function TodoListScreen() {
@@ -165,7 +165,7 @@ export default function TodoListScreen() {
           <NotesToolbar
             variant="full"
             title="To-Do List"
-            noun="list"
+            noun='list'
             total={data.length}
             scrollY={scrollY}
             controller={toolbar}
@@ -217,19 +217,18 @@ export default function TodoListScreen() {
 
       {confirmOpen && (
         <ConfirmDialog
-          key="confirm"
-          visible
-          count={pendingIds.length}
-          label={pendingIds.length === 1 ? 'to-do' : 'to-dos'}
-          actionText="will be moved to Recycle Bin"
-          cancelLabel="Cancel"
-          confirmLabel="Move to Recycle bin"
-          onCancel={cancelDelete}
-          onConfirm={performDelete}
-        />
+  visible={confirmOpen}
+  variant="recycle"
+  count={pendingIds.length}
+  noun="to-do"
+  explicitPlural="to-dos"
+  onCancel={cancelDelete}
+  onConfirm={performDelete}
+/>
+
       )}
 
-      <TodoFab onPress={() => setCreateOpen(true)} />
+      <FAB onPress={() => setCreateOpen(true)} />
 
       <UndoSnackbar
         visible={snackOpen}

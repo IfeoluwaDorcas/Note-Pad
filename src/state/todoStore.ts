@@ -1,5 +1,7 @@
-import { uid } from '@/src/utils/uid';
-import { create } from 'zustand';
+import { uid } from "@/src/utils/uid";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 export type Todo = {
   id: string;
@@ -23,55 +25,105 @@ type TodoState = {
   reorder: (ids: string[]) => void;
 };
 
-export const useTodoStore = create<TodoState>((set, get) => ({
-  todos: {},
+export const useTodoStore = create<TodoState>()(
+  persist(
+    (set, get) => ({
+      todos: {},
 
-  addTodo: ({ title }) => {
-    const id = uid();
-    const now = new Date().toISOString();
-    const current = Object.values(get().todos);
-    const maxOrder = current.length ? Math.max(...current.map(t => t.order ?? 0)) : -1;
-    const t: Todo = { id, title, completed: false, createdAt: now, updatedAt: now, order: maxOrder + 1 };
-    set(s => ({ todos: { ...s.todos, [id]: t } }));
-    return id;
-  },
+      addTodo: ({ title }) => {
+        const id = uid();
+        const now = new Date().toISOString();
+        const current = Object.values(get().todos);
+        const maxOrder = current.length
+          ? Math.max(...current.map((t) => t.order ?? 0))
+          : -1;
+        const t: Todo = {
+          id,
+          title,
+          completed: false,
+          createdAt: now,
+          updatedAt: now,
+          order: maxOrder + 1,
+        };
+        set((s) => ({ todos: { ...s.todos, [id]: t } }));
+        return id;
+      },
 
-  updateTodo: (id, patch) =>
-    set(s => {
-      const prev = s.todos[id]; if (!prev) return s as any;
-      return { todos: { ...s.todos, [id]: { ...prev, ...patch, updatedAt: new Date().toISOString() } } };
+      updateTodo: (id, patch) =>
+        set((s) => {
+          const prev = s.todos[id];
+          if (!prev) return s as any;
+          return {
+            todos: {
+              ...s.todos,
+              [id]: { ...prev, ...patch, updatedAt: new Date().toISOString() },
+            },
+          };
+        }),
+
+      toggleCompleted: (id) =>
+        set((s) => {
+          const prev = s.todos[id];
+          if (!prev) return s as any;
+          return {
+            todos: {
+              ...s.todos,
+              [id]: {
+                ...prev,
+                completed: !prev.completed,
+                updatedAt: new Date().toISOString(),
+              },
+            },
+          };
+        }),
+
+      softDelete: (id) =>
+        set((s) => {
+          const prev = s.todos[id];
+          if (!prev || prev.deletedAt) return s as any;
+          return {
+            todos: {
+              ...s.todos,
+              [id]: { ...prev, deletedAt: new Date().toISOString() },
+            },
+          };
+        }),
+
+      restore: (id) =>
+        set((s) => {
+          const prev = s.todos[id];
+          if (!prev || !prev.deletedAt) return s as any;
+          const { deletedAt, ...rest } = prev as Required<Todo>;
+          return {
+            todos: {
+              ...s.todos,
+              [id]: { ...rest, updatedAt: new Date().toISOString() },
+            },
+          };
+        }),
+
+      hardDelete: (id) =>
+        set((s) => {
+          const next = { ...s.todos };
+          delete next[id];
+          return { todos: next };
+        }),
+
+      reorder: (ids) =>
+        set((s) => {
+          const next = { ...s.todos };
+          ids.forEach((id, idx) => {
+            const t = next[id];
+            if (t) next[id] = { ...t, order: idx, updatedAt: t.updatedAt };
+          });
+          return { todos: next };
+        }),
     }),
-
-  toggleCompleted: (id) =>
-    set(s => {
-      const prev = s.todos[id]; if (!prev) return s as any;
-      return { todos: { ...s.todos, [id]: { ...prev, completed: !prev.completed, updatedAt: new Date().toISOString() } } };
-    }),
-
-  softDelete: (id) =>
-    set(s => {
-      const prev = s.todos[id]; if (!prev || prev.deletedAt) return s as any;
-      return { todos: { ...s.todos, [id]: { ...prev, deletedAt: new Date().toISOString() } } };
-    }),
-
-  restore: (id) =>
-    set(s => {
-      const prev = s.todos[id]; if (!prev || !prev.deletedAt) return s as any;
-      const { deletedAt, ...rest } = prev as Required<Todo>;
-      return { todos: { ...s.todos, [id]: { ...rest, updatedAt: new Date().toISOString() } } };
-    }),
-
-  hardDelete: (id) =>
-    set(s => {
-      const next = { ...s.todos }; delete next[id]; return { todos: next };
-    }),
-
-  reorder: (ids) =>
-    set(s => {
-      const next = { ...s.todos };
-      ids.forEach((id, idx) => {
-        const t = next[id]; if (t) next[id] = { ...t, order: idx, updatedAt: t.updatedAt };
-      });
-      return { todos: next };
-    }),
-}));
+    {
+      name: "todos-storage",
+      storage: createJSONStorage(() => AsyncStorage),
+      version: 1,
+      partialize: (s) => ({ todos: s.todos }),
+    }
+  )
+);

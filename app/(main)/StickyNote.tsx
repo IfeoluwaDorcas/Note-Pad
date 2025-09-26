@@ -13,7 +13,7 @@ import UndoSnackbar from '@/components/feedback/UndoSnackbar';
 import NotesToolbar from '@/components/notes/NotesToolbar';
 import SelectionBar from '@/components/notes/SelectionBar';
 
-import StickyFab from '@/components/sticky/StickyFab';
+import FAB from "@/components/common/FAB";
 import CreateStickyDialog, { StickyPayload } from '@/components/sticky/StickyNoteDialog';
 import StickyNoteList from '@/components/sticky/StickyNoteList';
 
@@ -158,7 +158,7 @@ const base = useMemo(() => {
           <NotesToolbar
             variant="full"
             title="Sticky Notes"
-            noun='pins'
+            noun="pin"
             total={data.length}
             scrollY={scrollY}
             controller={toolbar}
@@ -198,8 +198,19 @@ const base = useMemo(() => {
           key="edit"
           visible
           mode="edit"
-          initial={editing ? { title: editing.title, content: editing.content, color: editing.color } : undefined}
-          onClose={() => { setEditOpen(false); setEditingId(null); }}
+          initial={
+            editing
+              ? {
+                  title: editing.title,
+                  content: editing.content,
+                  color: editing.color,
+                }
+              : undefined
+          }
+          onClose={() => {
+            setEditOpen(false);
+            setEditingId(null);
+          }}
           onUpdate={handleUpdate}
           confirmLabel="Save"
         />
@@ -207,25 +218,33 @@ const base = useMemo(() => {
 
       {confirmOpen && (
         <ConfirmDialog
-          key="confirm"
-          visible
+          visible={confirmOpen}
+          variant="recycle"
           count={pendingIds.length}
-          label={pendingIds.length === 1 ? 'sticky note' : 'sticky notes'}
-          actionText="will be moved to Recycle Bin"
-          cancelLabel="Cancel"
-          confirmLabel="Move to Recycle bin"
+          noun="sticky note"
+          explicitPlural="sticky notes"
           onCancel={cancelDelete}
           onConfirm={performDelete}
         />
       )}
 
-      <StickyFab onPress={() => setCreateOpen(true)} />
+      <FAB onPress={() => setCreateOpen(true)} />
 
       <UndoSnackbar
         visible={snackOpen}
-        message={undoIds.length <= 1 ? 'Sticky moved to Recycle Bin' : `${undoIds.length} stickies moved to Recycle Bin`}
-        onAction={() => { undoIds.forEach((id) => restore(id)); setSnackOpen(false); }}
-        onHide={() => { setSnackOpen(false); setUndoIds([]); }}
+        message={
+          undoIds.length <= 1
+            ? "Sticky moved to Recycle Bin"
+            : `${undoIds.length} stickies moved to Recycle Bin`
+        }
+        onAction={() => {
+          undoIds.forEach((id) => restore(id));
+          setSnackOpen(false);
+        }}
+        onHide={() => {
+          setSnackOpen(false);
+          setUndoIds([]);
+        }}
       />
     </SafeAreaView>
   );

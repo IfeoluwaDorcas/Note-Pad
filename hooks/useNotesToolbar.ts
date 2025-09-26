@@ -23,8 +23,7 @@ type Params = {
 
 export type NotesToolbarController = ReturnType<typeof useNotesToolbar>;
 
-export function useNotesToolbar({ scrollY, mode = 'default' }: Params) {
-  // ----- global UI store
+export function useNotesToolbar({ scrollY, mode = "default" }: Params) {
   const {
     sortBy,
     sortDir,
@@ -36,7 +35,7 @@ export function useNotesToolbar({ scrollY, mode = 'default' }: Params) {
   } = useUIStore();
 
   const [searchOpen, setSearchOpen] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
@@ -79,8 +78,8 @@ export function useNotesToolbar({ scrollY, mode = 'default' }: Params) {
 
   const closeSearch = () => {
     setSearchOpen(false);
-    setQuery('');
-    setSearchQuery('');
+    setQuery("");
+    setSearchQuery("");
     RNSimpleAnimated.timing(fullProg, {
       toValue: 0,
       duration: 160,
@@ -114,17 +113,16 @@ export function useNotesToolbar({ scrollY, mode = 'default' }: Params) {
   );
 
   const fullFadeStyle = useAnimatedStyle(() => {
-  const y = scrollY?.value ?? 0;
-  const p = interpolate(y, [0, ENTER + 10], [0, 1], Extrapolation.CLAMP);
-  return { opacity: 1 - p, transform: [{ translateY: -8 * p }] };
-}, [scrollY]);
+    const y = scrollY?.value ?? 0;
+    const p = interpolate(y, [0, ENTER + 10], [0, 1], Extrapolation.CLAMP);
+    return { opacity: 1 - p, transform: [{ translateY: -8 * p }] };
+  }, [scrollY]);
 
-const stickyFadeStyle = useAnimatedStyle(() => {
-  const y = scrollY?.value ?? 0;
-  const p = interpolate(y, [0, ENTER + 10], [0, 1], Extrapolation.CLAMP);
-  return { opacity: p, transform: [{ translateY: -10 * (1 - p) }] };
-}, [scrollY]);
-
+  const stickyFadeStyle = useAnimatedStyle(() => {
+    const y = scrollY?.value ?? 0;
+    const p = interpolate(y, [0, ENTER + 10], [0, 1], Extrapolation.CLAMP);
+    return { opacity: p, transform: [{ translateY: -10 * (1 - p) }] };
+  }, [scrollY]);
 
   return {
     sortBy,

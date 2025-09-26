@@ -4,11 +4,11 @@ import { X } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-export type TodoPayload = { title: string }; // note removed
+export type TodoPayload = { title: string };
 
 type Props = {
   visible: boolean;
-  mode?: 'create' | 'edit';
+  mode?: "create" | "edit";
   initial?: Partial<TodoPayload>;
   onClose: () => void;
   onCreate?: (p: TodoPayload) => void;
@@ -18,7 +18,7 @@ type Props = {
 
 export default function CreateTodoDialog({
   visible,
-  mode = 'create',
+  mode = "create",
   initial,
   onClose,
   onCreate,
@@ -28,25 +28,25 @@ export default function CreateTodoDialog({
   const { theme } = useAppTheme();
   const T = theme.tokens;
 
-  const [title, setTitle] = useState(initial?.title ?? '');
+  const [title, setTitle] = useState(initial?.title ?? "");
 
   useEffect(() => {
     if (!visible) return;
-    setTitle(initial?.title ?? '');
+    setTitle(initial?.title ?? "");
   }, [visible, initial?.title]);
 
-  const reset = () => setTitle('');
+  const reset = () => setTitle("");
 
   const handleConfirm = () => {
     const trimmed = title.trim();
     if (!trimmed) return;
     const payload: TodoPayload = { title: trimmed };
-    mode === 'edit' ? onUpdate?.(payload) : onCreate?.(payload);
-    if (mode === 'create') reset();
+    mode === "edit" ? onUpdate?.(payload) : onCreate?.(payload);
+    if (mode === "create") reset();
     onClose();
   };
 
-  const btnText = confirmLabel ?? (mode === 'edit' ? 'Save' : 'Create');
+  const btnText = confirmLabel ?? (mode === "edit" ? "Save" : "Create");
 
   if (!visible) return null;
 
@@ -55,19 +55,27 @@ export default function CreateTodoDialog({
       <Pressable onPress={onClose} style={s.backdrop} />
 
       <View pointerEvents="box-none" style={s.centerLayer}>
-        <KeyboardAvoidingView enabled={Platform.OS === 'ios'} behavior="padding" style={s.kav}>
+        <KeyboardAvoidingView
+          enabled={Platform.OS === "ios"}
+          behavior="padding"
+          style={s.kav}
+        >
           <View
             onStartShouldSetResponder={() => true}
-            style={[s.card, { backgroundColor: T.colors.bg, borderRadius: T.radius }]}
+            style={[
+              s.card,
+              { backgroundColor: T.colors.card, borderRadius: T.radius },
+            ]}
           >
             <View style={s.header}>
-              <Text style={[s.h, { color: T.colors.text }]}>{mode === 'edit' ? 'Edit To-do' : 'New To-do'}</Text>
+              <Text style={[s.h, { color: T.colors.text }]}>
+                {mode === "edit" ? "Edit To-do" : "New To-do"}
+              </Text>
               <Pressable hitSlop={10} onPress={onClose}>
                 <X size={20} color={T.colors.text} />
               </Pressable>
             </View>
 
-            {/* Title only */}
             <TextInput
               value={title}
               onChangeText={setTitle}
@@ -77,7 +85,11 @@ export default function CreateTodoDialog({
               style={[
                 s.input,
                 s.inputTitle,
-                { borderRadius: T.radius, color: T.colors.text, backgroundColor: T.colors.card },
+                {
+                  borderRadius: T.radius,
+                  color: T.colors.text,
+                  backgroundColor: T.colors.bg,
+                },
               ]}
               autoFocus
               returnKeyType="done"
@@ -86,7 +98,9 @@ export default function CreateTodoDialog({
 
             <View style={s.actions}>
               <Pressable onPress={onClose} style={[s.btn, s.ghost]}>
-                <Text style={[s.btnText, { color: T.colors.text }]}>Cancel</Text>
+                <Text style={[s.btnText, { color: T.colors.text }]}>
+                  Cancel
+                </Text>
               </Pressable>
               <Pressable
                 onPress={handleConfirm}
@@ -94,12 +108,14 @@ export default function CreateTodoDialog({
                 style={({ pressed }) => [
                   s.btn,
                   {
-                    backgroundColor: !title.trim() ? 'rgba(0,0,0,0.15)' : T.colors.accent,
+                    backgroundColor: !title.trim()
+                      ? "rgba(0,0,0,0.15)"
+                      : T.colors.accent,
                     opacity: pressed ? 0.95 : 1,
                   },
                 ]}
               >
-                <Text style={[s.btnText, { color: '#fff' }]}>{btnText}</Text>
+                <Text style={[s.btnText, { color: "#fff" }]}>{btnText}</Text>
               </Pressable>
             </View>
           </View>

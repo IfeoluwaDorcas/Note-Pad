@@ -94,14 +94,21 @@ export default function CreateStickyDialog({
       <Pressable onPress={onClose} style={styles.backdrop} />
 
       <View pointerEvents="box-none" style={styles.centerLayer}>
-        <KeyboardAvoidingView enabled={Platform.OS === 'ios'} behavior="padding" style={styles.kav}>
+        <KeyboardAvoidingView
+          enabled={Platform.OS === "ios"}
+          behavior="padding"
+          style={styles.kav}
+        >
           <View
             onStartShouldSetResponder={() => true}
-            style={[styles.card, { backgroundColor: T.colors.bg, borderRadius: T.radius }]}
+            style={[
+              styles.card,
+              { backgroundColor: T.colors.card, borderRadius: T.radius },
+            ]}
           >
             <View style={styles.header}>
               <Text style={[styles.h, { color: T.colors.text }]}>
-                {mode === 'edit' ? 'Edit Pin' : 'New Pin'}
+                {mode === "edit" ? "Edit Pin" : "New Pin"}
               </Text>
               <Pressable hitSlop={10} onPress={onClose}>
                 <X size={20} color={T.colors.text} />
@@ -117,7 +124,11 @@ export default function CreateStickyDialog({
               style={[
                 styles.input,
                 styles.inputTitle,
-                { borderRadius: T.radius, color: T.colors.text, backgroundColor: T.colors.card },
+                {
+                  borderRadius: T.radius,
+                  color: T.colors.text,
+                  backgroundColor: T.colors.bg,
+                },
               ]}
             />
             <TextInput
@@ -130,13 +141,19 @@ export default function CreateStickyDialog({
               style={[
                 styles.input,
                 styles.inputContent,
-                { borderRadius: T.radius, color: T.colors.text, backgroundColor: T.colors.card },
+                {
+                  borderRadius: T.radius,
+                  color: T.colors.text,
+                  backgroundColor: T.colors.bg,
+                },
               ]}
             />
 
-            <Text style={[styles.section, { color: T.colors.text }]}>Color</Text>
+            <Text style={[styles.section, { color: T.colors.text }]}>
+              Color
+            </Text>
             <View
-              style={[styles.row, { flexWrap: 'nowrap' }]}
+              style={[styles.row, { flexWrap: "nowrap" }]}
               onLayout={onRowLayout}
             >
               {swatches.map((c) => {
@@ -169,7 +186,9 @@ export default function CreateStickyDialog({
 
             <View style={styles.actions}>
               <Pressable onPress={onClose} style={[styles.btn, styles.ghost]}>
-                <Text style={[styles.btnText, { color: T.colors.text }]}>Cancel</Text>
+                <Text style={[styles.btnText, { color: T.colors.text }]}>
+                  Cancel
+                </Text>
               </Pressable>
               <Pressable
                 onPress={handleConfirm}
@@ -177,12 +196,16 @@ export default function CreateStickyDialog({
                 style={({ pressed }) => [
                   styles.btn,
                   {
-                    backgroundColor: !title.trim() ? 'rgba(0,0,0,0.15)' : T.colors.accent,
+                    backgroundColor: !title.trim()
+                      ? "rgba(0,0,0,0.15)"
+                      : T.colors.accent,
                     opacity: pressed ? 0.95 : 1,
                   },
                 ]}
               >
-                <Text style={[styles.btnText, { color: '#fff' }]}>{btnText}</Text>
+                <Text style={[styles.btnText, { color: "#fff" }]}>
+                  {btnText}
+                </Text>
               </Pressable>
             </View>
           </View>

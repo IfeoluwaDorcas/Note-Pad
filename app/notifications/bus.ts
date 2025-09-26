@@ -1,16 +1,34 @@
-import { NativeEventEmitter } from 'react-native';
+type Listener<T> = (payload: T) => void;
 
-const emitter = new NativeEventEmitter();
-const EVT_OPEN_REMINDER = 'EVT_OPEN_REMINDER';
-
-export function emitOpenReminder(reminderId: string) {
-  emitter.emit(EVT_OPEN_REMINDER, reminderId);
+function createBus<T>() {
+  const subs = new Set<Listener<T>>();
+  return {
+    emit(payload: T) {
+      subs.forEach((fn) => {
+        try {
+          fn(payload);
+        } catch {
+          /* swallow */
+        }
+      });
+    },
+    subscribe(fn: Listener<T>): () => void {
+      subs.add(fn);
+      return () => {
+        subs.delete(fn);
+      };
+    },
+  };
 }
 
-export function subscribeOpenReminder(cb: (id: string) => void): () => void {
-  const subscription = emitter.addListener(EVT_OPEN_REMINDER, cb);
+const openReminderBus = createBus<string>();
 
-  return () => {
-    subscription.remove();
-  };
+export function emitOpenReminder(reminderId: string) {
+  openReminderBus.emit(reminderId);
+}
+
+export function subscribeOpenReminder(
+  cb: (reminderId: string) => void
+): () => void {
+  return openReminderBus.subscribe(cb);
 }

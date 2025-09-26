@@ -5,11 +5,13 @@ import { SafeAreaView } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 
 import ConfirmDialog from '@/components/common/ConfirmDialog';
-import UndoSnackbar from '@/components/feedback/UndoSnackbar';
-import NotesToolbar from '@/components/notes/NotesToolbar';
-import SelectionBar from '@/components/notes/SelectionBar';
-import CreateReminderDialog, { ReminderPayload } from '@/components/reminder/CreateReminderDialog';
-import ReminderFab from '@/components/reminder/ReminderFab';
+import FAB from "@/components/common/FAB";
+import UndoSnackbar from "@/components/feedback/UndoSnackbar";
+import NotesToolbar from "@/components/notes/NotesToolbar";
+import SelectionBar from "@/components/notes/SelectionBar";
+import CreateReminderDialog, {
+  ReminderPayload,
+} from "@/components/reminder/CreateReminderDialog";
 import ReminderList from '@/components/reminder/ReminderList';
 import { useNotesToolbar } from '@/hooks/useNotesToolbar';
 import { useReminderStore } from '@/src/state/reminderStore';
@@ -87,37 +89,56 @@ export default function Reminders() {
       setEditingId(rid);
       setEditOpen(true);
     });
-    return unsub;
+
+    return () => {
+      unsub && unsub();
+    };
   }, []);
 
-  const handleCreate = useCallback(async (p: ReminderPayload) => {
-    const id = addReminder(p);
-    try { await scheduleReminderNotification(p, id); } catch {}
-    return id;
-  }, [addReminder]);
+  const handleCreate = useCallback(
+    async (p: ReminderPayload) => {
+      const id = addReminder(p);
+      try {
+        await scheduleReminderNotification(p, id);
+      } catch {}
+      return id;
+    },
+    [addReminder]
+  );
 
-  const handleUpdate = useCallback((p: ReminderPayload) => {
-    if (editingId) updateReminder(editingId, p);
-  }, [editingId, updateReminder]);
+  const handleUpdate = useCallback(
+    (p: ReminderPayload) => {
+      if (editingId) updateReminder(editingId, p);
+    },
+    [editingId, updateReminder]
+  );
 
-  const handleToggleDone = useCallback(async (id: string) => {
-    const before = useReminderStore.getState().reminders[id];
-    const wasDaily = before?.repeat === 'daily' && before?.completed === false;
+  const handleToggleDone = useCallback(
+    async (id: string) => {
+      const before = useReminderStore.getState().reminders[id];
+      const wasDaily =
+        before?.repeat === "daily" && before?.completed === false;
 
-    toggleCompleted(id);
+      toggleCompleted(id);
 
-    if (wasDaily) {
-      const after = useReminderStore.getState().reminders[id];
-      if (after) {
-        try {
-          await scheduleReminderNotification(
-            { title: after.title, place: after.place, remindAt: after.remindAt },
-            id
-          );
-        } catch {}
+      if (wasDaily) {
+        const after = useReminderStore.getState().reminders[id];
+        if (after) {
+          try {
+            await scheduleReminderNotification(
+              {
+                title: after.title,
+                place: after.place,
+                remindAt: after.remindAt,
+              },
+              id
+            );
+          } catch {}
+        }
       }
-    }
-  }, [toggleCompleted]);
+    },
+    [toggleCompleted]
+  );
 
   const [undoIds, setUndoIds] = useState<string[]>([]);
   const [snackOpen, setSnackOpen] = useState(false);
@@ -125,28 +146,44 @@ export default function Reminders() {
   const [pendingIds, setPendingIds] = useState<string[]>([]);
 
   const requestDeleteSelected = useCallback(() => {
-    const ids = Array.from(selectedIds); if (!ids.length) return;
-    setPendingIds(ids); setConfirmOpen(true);
+    const ids = Array.from(selectedIds);
+    if (!ids.length) return;
+    setPendingIds(ids);
+    setConfirmOpen(true);
   }, [selectedIds]);
 
   const performDelete = useCallback(() => {
-    if (!pendingIds.length) { setConfirmOpen(false); return; }
-    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
-    pendingIds.forEach(id => softDelete(id));
-    setUndoIds(pendingIds); setSnackOpen(true); setConfirmOpen(false); exitSelection();
+    if (!pendingIds.length) {
+      setConfirmOpen(false);
+      return;
+    }
+    try {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch {}
+    pendingIds.forEach((id) => softDelete(id));
+    setUndoIds(pendingIds);
+    setSnackOpen(true);
+    setConfirmOpen(false);
+    exitSelection();
   }, [pendingIds, softDelete, exitSelection]);
 
   const cancelDelete = useCallback(() => setConfirmOpen(false), []);
 
   const TOOLBAR_HEIGHT = 56;
-  const editing = editingId ? data.find(r => r.id === editingId) : undefined;
-  const editingInitial = editing ? {
-    title: editing.title,
-    place: editing.place,
-    remindAt: editing.remindAt,
-    timeHHmm: new Date(editing.remindAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false }),
-    repeat: editing.repeat ?? 'none',
-  } : undefined;
+  const editing = editingId ? data.find((r) => r.id === editingId) : undefined;
+  const editingInitial = editing
+    ? {
+        title: editing.title,
+        place: editing.place,
+        remindAt: editing.remindAt,
+        timeHHmm: new Date(editing.remindAt).toLocaleTimeString(undefined, {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }),
+        repeat: editing.repeat ?? "none",
+      }
+    : undefined;
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -192,11 +229,21 @@ export default function Reminders() {
       />
 
       {selectionMode && !confirmOpen && (
-        <SelectionBar count={selectedIds.size} onClose={exitSelection} onDelete={requestDeleteSelected} />
+        <SelectionBar
+          count={selectedIds.size}
+          onClose={exitSelection}
+          onDelete={requestDeleteSelected}
+        />
       )}
 
       {createOpen && (
-        <CreateReminderDialog key="create" visible mode="create" onClose={() => setCreateOpen(false)} onCreate={handleCreate} />
+        <CreateReminderDialog
+          key="create"
+          visible
+          mode="create"
+          onClose={() => setCreateOpen(false)}
+          onCreate={handleCreate}
+        />
       )}
 
       {editOpen && (
@@ -205,7 +252,10 @@ export default function Reminders() {
           visible
           mode="edit"
           initial={editingInitial}
-          onClose={() => { setEditOpen(false); setEditingId(null); }}
+          onClose={() => {
+            setEditOpen(false);
+            setEditingId(null);
+          }}
           onUpdate={handleUpdate}
           confirmLabel="Save"
         />
@@ -213,25 +263,33 @@ export default function Reminders() {
 
       {confirmOpen && (
         <ConfirmDialog
-          key="confirm"
-          visible
+          visible={confirmOpen}
+          variant="recycle"
           count={pendingIds.length}
-          label={pendingIds.length === 1 ? 'reminder' : 'reminders'}
-          actionText="will be moved to Recycle Bin"
-          cancelLabel="Cancel"
-          confirmLabel="Move to Recycle bin"
+          noun="reminder"
+          explicitPlural="reminders"
           onCancel={cancelDelete}
           onConfirm={performDelete}
         />
       )}
 
-      <ReminderFab onPress={() => setCreateOpen(true)} />
+      <FAB onPress={() => setCreateOpen(true)} />
 
       <UndoSnackbar
         visible={snackOpen}
-        message={undoIds.length <= 1 ? 'Reminder moved to Recycle Bin' : `${undoIds.length} reminders moved to Recycle Bin`}
-        onAction={() => { undoIds.forEach(id => restore(id)); setSnackOpen(false); }}
-        onHide={() => { setSnackOpen(false); setUndoIds([]); }}
+        message={
+          undoIds.length <= 1
+            ? "Reminder moved to Recycle Bin"
+            : `${undoIds.length} reminders moved to Recycle Bin`
+        }
+        onAction={() => {
+          undoIds.forEach((id) => restore(id));
+          setSnackOpen(false);
+        }}
+        onHide={() => {
+          setSnackOpen(false);
+          setUndoIds([]);
+        }}
       />
     </SafeAreaView>
   );

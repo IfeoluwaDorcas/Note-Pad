@@ -1,4 +1,6 @@
+// components/common/ConfirmDialog.tsx
 import { useAppTheme } from '@/providers/ThemeProvider';
+import { pluralize } from '@/src/utils/plural';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Modal,
@@ -10,28 +12,56 @@ import {
   View,
 } from 'react-native';
 
+type ConfirmVariant = 'recycle' | 'permanent';
+
+const COPY: Record<ConfirmVariant, { actionText: string; confirmLabel: string; cancelLabel: string }> = {
+  recycle:   { actionText: 'will be moved to Recycle Bin', confirmLabel: 'Move to Recycle bin', cancelLabel: 'Cancel' },
+  permanent: { actionText: 'will be permanently deleted',  confirmLabel: 'Delete forever',        cancelLabel: 'Cancel' },
+};
+
 type Props = {
+  /** Controls visibility */
   visible: boolean;
+
+  /** Count of items affected */
   count: number;
-  label: string;
-  actionText?: string;
-  cancelLabel?: string;
-  confirmLabel?: string;
+
+  /** Base singular noun, e.g. 'note' | 'reminder' | 'sticky note' | 'to-do' | 'list' | 'pin' */
+  noun: string;
+
+  /** Optional explicit plural form (e.g., 'to-dos', 'sticky notes') */
+  explicitPlural?: string;
+
+  /** What kind of confirmation this is */
+  variant: ConfirmVariant;
+
+  /** Actions */
   onConfirm: () => void;
   onCancel: () => void;
+
+  /** UX */
   dismissOnBackdrop?: boolean;
+
+  /** Rare overrides (usually don't touch these) */
+  actionTextOverride?: string;
+  confirmLabelOverride?: string;
+  cancelLabelOverride?: string;
+  messageOverride?: string;
 };
 
 export default function ConfirmDialog({
   visible,
   count,
-  label,
-  actionText = 'will be moved to Recycle Bin',
-  cancelLabel = 'Cancel',
-  confirmLabel = 'Move to Recycle bin',
+  noun,
+  explicitPlural,
+  variant,
   onConfirm,
   onCancel,
   dismissOnBackdrop = true,
+  actionTextOverride,
+  confirmLabelOverride,
+  cancelLabelOverride,
+  messageOverride,
 }: Props) {
   const { theme } = useAppTheme();
   const c = theme.tokens.colors;
@@ -57,7 +87,13 @@ export default function ConfirmDialog({
 
   if (!mounted) return null;
 
-  const message = `${count} ${label} ${actionText}`;
+  const copy = COPY[variant];
+  const actionText = actionTextOverride ?? copy.actionText;
+  const confirmLabel = confirmLabelOverride ?? copy.confirmLabel;
+  const cancelLabel = cancelLabelOverride ?? copy.cancelLabel;
+
+  const label = pluralize(noun, count, explicitPlural); // e.g. "note" | "notes"
+  const message = messageOverride ?? `${count} ${label} ${actionText}`;
 
   return (
     <Modal

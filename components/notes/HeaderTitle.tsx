@@ -4,29 +4,14 @@ import { Text, View } from 'react-native';
 
 type Props = {
   title: string;
-  count?: number;
-  noun?: string;
   subtitle?: string;
+  noun?: string;
+  count?: number;
 };
 
-function pluralize(noun: string, count: number) {
-  if (count === 1) return noun;
-  const lower = noun.toLowerCase();
-  if (/(s|x|z|ch|sh)$/.test(lower)) return noun + 'es';
-  if (/[bcdfghjklmnpqrstvwxyz]y$/i.test(noun)) return noun.slice(0, -1) + 'ies';
-  return noun + 's';
-}
-
-export default function HeaderTitle({ title, count, noun, subtitle }: Props) {
+function HeaderTitle({ title, subtitle }: Props) {
   const { theme } = useAppTheme();
   const T = theme.tokens;
-
-  const autoSubtitle =
-    typeof count === 'number' && noun
-      ? `${count} ${pluralize(noun, count)}`
-      : undefined;
-
-  const finalSubtitle = subtitle ?? autoSubtitle;
 
   return (
     <View style={{ alignItems: 'center' }}>
@@ -34,11 +19,13 @@ export default function HeaderTitle({ title, count, noun, subtitle }: Props) {
         {title}
       </Text>
 
-      {!!finalSubtitle && (
+      {!!subtitle && (
         <Text style={{ fontSize: 12, opacity: 0.7, color: T.colors.text }}>
-          {finalSubtitle}
+          {subtitle}
         </Text>
       )}
     </View>
   );
 }
+
+export default React.memo(HeaderTitle);

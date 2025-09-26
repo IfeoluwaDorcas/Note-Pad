@@ -1,17 +1,10 @@
 import { Note, ViewMode } from '@/src/types/note';
+import { formatShortDate } from '@/src/utils/dates';
 import { columnsFor } from '@/src/utils/notes';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { SharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
 import NoteCard from './NoteCard';
-
-function formatNoteDate(iso?: string) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  const day = d.getDate();
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return `${day} ${months[d.getMonth()]} ${d.getFullYear()}`;
-}
 
 type Props = {
   data: Note[] & Array<any>;
@@ -56,7 +49,7 @@ export default function NotesList({
   const renderItem = React.useCallback(
     ({ item }: { item: Note & { __daysLeft?: number } }) => {
       const selected = selectedIds?.has(item.id) ?? false;
-      const dateLabel = formatNoteDate(item.updatedAt || item.createdAt);
+      const dateLabel = formatShortDate(item.updatedAt || item.createdAt);
       const daysLeft = item.__daysLeft;
 
       return (

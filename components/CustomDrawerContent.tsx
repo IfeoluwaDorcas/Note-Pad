@@ -28,15 +28,15 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
   const noteItems      = useMemo(() => notes.filter(n => n.type === 'note'), [notes]);
   const stickies = useMemo(() => Object.values(stickiesMap), [stickiesMap]);
   const todos    = useMemo(() => Object.values(todosMap), [todosMap]);
-  const reminderItems  = useMemo(() => notes.filter(n => n.type === 'reminder'), [notes]);
+  const reminders = useMemo(() => Object.values(reminderMap), [reminderMap]);
 
   const notesActiveCount     = useMemo(() => noteItems.filter(n => !n.deletedAt).length, [noteItems]);
-  const remindersActiveCount = useMemo(() => reminderItems.filter(n => !n.deletedAt).length, [reminderItems]);
+  const remindersActiveCount = useMemo(() => reminders.filter(r => !r.deletedAt).length, [reminders]);
   const stickyActiveCount    = useMemo(() => stickies.filter(s => !s.deletedAt).length, [stickies]);
   const todoActiveCount      = useMemo(() => todos.filter(t => !t.deletedAt).length, [todos]);
 
   const deletedNotesCount     = useMemo(() => noteItems.filter(n => n.deletedAt).length, [noteItems]);
-  const deletedRemindersCount = useMemo(() => reminderItems.filter(n => n.deletedAt).length, [reminderItems]);
+  const deletedRemindersCount = useMemo(() => reminders.filter(r => !!r.deletedAt).length, [reminders]);
   const deletedStickyCount    = useMemo(() => stickies.filter(s => !!s.deletedAt).length, [stickies]);
   const deletedTodosCount     = useMemo(() => todos.filter(t => !!t.deletedAt).length, [todos]);
 
@@ -92,7 +92,7 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
         count={todoActiveCount}
         active={isFocused('Todo')}
         colors={c}
-        onPress={() => navigation.navigate('TodoList')}
+        onPress={() => navigation.navigate('Todo')}
       />
       <Row
         label="Settings"

@@ -1,3 +1,4 @@
+// components/DeletedItemScreen.tsx
 import { useNavigation } from '@react-navigation/native';
 import React, { useLayoutEffect } from 'react';
 import { SafeAreaView, Text, View } from 'react-native';
@@ -7,10 +8,12 @@ import UndoSnackbar from '@/components/feedback/UndoSnackbar';
 import NotesList from '@/components/notes/NoteList';
 import NotesToolbar from '@/components/notes/NotesToolbar';
 import RecycleSelectionBar from '@/components/notes/RecycleSelectionBar';
+import ReminderList from '@/components/reminder/ReminderList';
 import StickyNoteList from '@/components/sticky/StickyNoteList';
 import TodoList from '@/components/todo/TodoList';
 import { useRecycleScreen } from '@/hooks/useRecycleScreen';
 import { useAppTheme } from '@/providers/ThemeProvider';
+import { pluralize } from '@/src/utils/plural'; // keep for the snackbar only
 
 const TOOLBAR_HEIGHT = 56;
 
@@ -69,16 +72,14 @@ export default function DeletedItemScreen({
     setSnackOpen,
   } = useRecycleScreen(type);
 
-  const plural = pluralLabel ?? `${label}s`;
-
   const restoredMsg =
     undoIds.length <= 1
       ? `${label.charAt(0).toUpperCase() + label.slice(1)} restored`
-      : `${undoIds.length} ${plural} restored`;
+      : `${undoIds.length} ${pluralize(label, undoIds.length, pluralLabel)} restored`;
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      {/* Sticky toolbar (compact) */}
+      {/* Compact sticky toolbar */}
       <NotesToolbar
         variant="sticky"
         title={title}
@@ -103,6 +104,7 @@ export default function DeletedItemScreen({
                 variant="full"
                 title={title}
                 total={data.length}
+                noun="pin"
                 scrollY={scrollY}
                 selectionMode={selectionMode}
                 allSelected={allSelected}
@@ -132,6 +134,37 @@ export default function DeletedItemScreen({
                 variant="full"
                 title={title}
                 total={data.length}
+                noun="list"
+                scrollY={scrollY}
+                selectionMode={selectionMode}
+                allSelected={allSelected}
+                onToggleSelectAll={toggleSelectAll}
+                onRequestEdit={enterSelection}
+                mode="recycle"
+                onEmptyBin={handleEmptyBin}
+              />
+              <BinInfoLine />
+            </>
+          }
+          contentTopInset={TOOLBAR_HEIGHT}
+          onLongPressItem={handleLongPress}
+          onPressItem={handlePressNote}
+          selectionMode={selectionMode}
+          selectedIds={selectedIds}
+          onToggleSelectItem={toggleSelect}
+          mode="recycle"
+        />
+      ) : type === 'reminder' ? (
+        <ReminderList
+          data={data as any}
+          scrollY={scrollY}
+          header={
+            <>
+              <NotesToolbar
+                variant="full"
+                title={title}
+                total={data.length}
+                noun="reminder" 
                 scrollY={scrollY}
                 selectionMode={selectionMode}
                 allSelected={allSelected}
@@ -161,8 +194,8 @@ export default function DeletedItemScreen({
               <NotesToolbar
                 variant="full"
                 title={title}
-                noun={plural}
                 total={totalCount}
+                noun="note"
                 scrollY={scrollY}
                 selectionMode={selectionMode}
                 allSelected={allSelected}
@@ -184,7 +217,7 @@ export default function DeletedItemScreen({
         />
       )}
 
-      {/* Selection bar for recycle actions */}
+      {/* Selection bar for bin actions */}
       {selectionMode && !confirmOpen && (
         <RecycleSelectionBar
           count={selectedIds.size}
@@ -194,19 +227,18 @@ export default function DeletedItemScreen({
         />
       )}
 
-      {/* Confirm permanent delete */}
+      {/* Permanent delete confirm */}
       <ConfirmDialog
         visible={confirmOpen}
+        variant="permanent"
         count={selectedIds.size}
-        label={selectedIds.size === 1 ? label : plural}
-        actionText="will be permanently deleted"
-        cancelLabel="Cancel"
-        confirmLabel="Delete forever"
+        noun={label}
+        explicitPlural={pluralLabel}
         onCancel={cancelDelete}
         onConfirm={performDeleteForever}
       />
 
-      {/* Undo (restore) snackbar */}
+      {/* Undo snackbar */}
       <UndoSnackbar
         visible={snackOpen}
         message={restoredMsg}

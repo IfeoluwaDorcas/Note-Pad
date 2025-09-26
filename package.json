@@ -18,6 +18,8 @@
     "@expo-google-fonts/work-sans": "^0.4.1",
     "@expo/vector-icons": "^15.0.2",
     "@gorhom/portal": "^1.0.14",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/datetimepicker": "8.4.4",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/drawer": "^7.5.7",
     "@react-navigation/elements": "^2.3.8",
@@ -29,6 +31,7 @@
     "expo-haptics": "~15.0.7",
     "expo-image": "~3.0.8",
     "expo-linking": "~8.0.8",
+    "expo-notifications": "~0.32.11",
     "expo-router": "~6.0.1",
     "expo-splash-screen": "~31.0.9",
     "expo-status-bar": "~3.0.8",
@@ -51,10 +54,7 @@
     "react-native-web": "^0.21.0",
     "react-native-webview": "13.15.0",
     "react-native-worklets": "0.5.1",
-    "undefined": "\\",
-    "zustand": "^5.0.7",
-    "@react-native-community/datetimepicker": "8.4.4",
-    "expo-notifications": "~0.32.11"
+    "zustand": "^5.0.7"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

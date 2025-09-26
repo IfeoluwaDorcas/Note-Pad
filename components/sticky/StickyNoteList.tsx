@@ -91,7 +91,9 @@ export default function StickyNoteList({
       removeClippedSubviews
       initialNumToRender={12}
       windowSize={7}
-      ItemSeparatorComponent={view === 'simpleList' ? (() => <View style={{ height: 6 }} />) : undefined}
+      ItemSeparatorComponent={
+        view === "simpleList" ? () => <View style={{ height: 4 }} /> : undefined
+      }
     />
   );
 }

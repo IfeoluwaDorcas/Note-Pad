@@ -1,5 +1,5 @@
-import { allThemes, type AppTheme } from '@/constants/theme';
-import React, { createContext, useContext, useState } from 'react';
+import { allThemes, type AppTheme } from "@/constants/theme";
+import React, { createContext, useContext, useState } from "react";
 
 type ThemeContextValue = {
   theme: AppTheme;
@@ -8,13 +8,15 @@ type ThemeContextValue = {
 };
 
 const ThemeCtx = createContext<ThemeContextValue>({
-  theme: allThemes[0],
+  theme: allThemes[3],
   setTheme: () => {},
   allThemes,
 });
 
-export const ThemeProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const [theme, setTheme] = useState<AppTheme>(allThemes[8]);
+export const ThemeProvider: React.FC<React.PropsWithChildren> = ({
+  children,
+}) => {
+  const [theme, setTheme] = useState<AppTheme>(allThemes[0]);
 
   return (
     <ThemeCtx.Provider value={{ theme, setTheme, allThemes }}>

@@ -2,6 +2,7 @@ import PopoverMenu from '@/components/common/PopoverMenu';
 import HeaderTitle from '@/components/notes/HeaderTitle';
 import { NotesToolbarController, useNotesToolbar } from '@/hooks/useNotesToolbar';
 import { useAppTheme } from '@/providers/ThemeProvider';
+import { countLabel } from "@/src/utils/plural";
 import { useNavigation } from '@react-navigation/native';
 import {
   ArrowDown,
@@ -215,15 +216,27 @@ export default function NotesToolbar(props: Props) {
       <View style={styles.center}>
         <HeaderTitle
           title={title}
-          noun={noun ?? 'note'}
-          subtitle={typeof total === 'number' && typeof noun === 'string' ? `${total} ${noun}` : undefined}
+          noun={noun ?? "note"}
+          subtitle={
+            typeof total === "number" && typeof noun === "string"
+              ? countLabel(total, noun)
+              : undefined
+          }
         />
       </View>
 
       <View style={styles.row1}>
         {selectionMode ? (
-          <Pressable onPress={onToggleSelectAll} style={styles.allToggle} hitSlop={8}>
-            {allSelected ? <CheckCircle2 size={20} color={T.colors.text} /> : <Circle size={20} color={T.colors.text} />}
+          <Pressable
+            onPress={onToggleSelectAll}
+            style={styles.allToggle}
+            hitSlop={8}
+          >
+            {allSelected ? (
+              <CheckCircle2 size={20} color={T.colors.text} />
+            ) : (
+              <Circle size={20} color={T.colors.text} />
+            )}
             <Text style={[styles.allLabel, { color: T.colors.text }]}>All</Text>
           </Pressable>
         ) : (
@@ -244,13 +257,13 @@ export default function NotesToolbar(props: Props) {
           )}
 
           <RNSimpleAnimated.View
-            pointerEvents={t.searchOpen ? 'auto' : 'none'}
+            pointerEvents={t.searchOpen ? "auto" : "none"}
             style={[
               styles.searchBar,
               {
                 opacity: t.fullProg,
                 transform: [{ scaleX: t.fullProg }],
-                backgroundColor: T.colors.card,
+                backgroundColor: T.colors.accentMuted,
               },
             ]}
           >
@@ -260,7 +273,11 @@ export default function NotesToolbar(props: Props) {
               placeholder={searchPlaceholder}
               placeholderTextColor={T.colors.placeholder}
               autoFocus={t.searchOpen}
-              style={[styles.searchInput, webNoOutline, { color: T.colors.text }]}
+              style={[
+                styles.searchInput,
+                webNoOutline,
+                { color: T.colors.text },
+              ]}
               returnKeyType="search"
               underlineColorAndroid="transparent"
               selectionColor={T.colors.text}
@@ -271,20 +288,25 @@ export default function NotesToolbar(props: Props) {
         <View>{MoreMenus}</View>
       </View>
 
-      {mode !== 'recycle' && !t.shouldHideFilters && (
+      {mode !== "recycle" && !t.shouldHideFilters && (
         <View className="row2" style={styles.row2}>
-          <View ref={t.filterAnchorRef} style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View
+            ref={t.filterAnchorRef}
+            style={{ flexDirection: "row", alignItems: "center" }}
+          >
             <IconBtn onPress={() => t.setFilterOpen(true)}>
               <SlidersHorizontal size={14} color={T.colors.text} />
             </IconBtn>
 
             <Pressable onPress={() => t.setFilterOpen(true)}>
-              <Text style={{ fontSize: 14, marginRight: 10, color: T.colors.text }}>
-                {t.sortBy === 'dateCreated'
-                  ? 'Date Created'
-                  : t.sortBy === 'dateModified'
-                  ? 'Date Modified'
-                  : 'Title'}
+              <Text
+                style={{ fontSize: 14, marginRight: 10, color: T.colors.text }}
+              >
+                {t.sortBy === "dateCreated"
+                  ? "Date Created"
+                  : t.sortBy === "dateModified"
+                  ? "Date Modified"
+                  : "Title"}
               </Text>
             </Pressable>
           </View>
@@ -292,7 +314,7 @@ export default function NotesToolbar(props: Props) {
           <Text style={{ color: T.colors.text }}>|</Text>
 
           <IconBtn onPress={t.toggleSortDir}>
-            {t.sortDir === 'asc' ? (
+            {t.sortDir === "asc" ? (
               <ArrowUp size={16} strokeWidth={1} color={T.colors.text} />
             ) : (
               <ArrowDown size={16} strokeWidth={1} color={T.colors.text} />

@@ -1,12 +1,12 @@
-import ReminderRow from '@/components/reminder/ReminderRow';
-import SectionHeader from '@/components/todo/SectionHeader'; // reuse
-import type { Reminder } from '@/src/state/reminderStore';
-import React from 'react';
-import { ListRenderItemInfo, StyleSheet, View } from 'react-native';
-import type { SharedValue } from 'react-native-reanimated';
-import Animated, { useAnimatedScrollHandler } from 'react-native-reanimated';
+import ReminderRow from "@/components/reminder/ReminderRow";
+import SectionHeader from "@/components/todo/SectionHeader";
+import type { Reminder } from "@/src/state/reminderStore";
+import React from "react";
+import { ListRenderItemInfo, StyleSheet, View } from "react-native";
+import type { SharedValue } from "react-native-reanimated";
+import Animated, { useAnimatedScrollHandler } from "react-native-reanimated";
 
-export type ReminderViewItem = Reminder;
+export type ReminderViewItem = Reminder & { __daysLeft?: number };
 
 type Props = {
   data: ReminderViewItem[];
@@ -22,22 +22,31 @@ type Props = {
   onToggleDone?: (id: string) => void;
 
   contentTopInset?: number;
-  mode?: 'default' | 'recycle';
+  mode?: "default" | "recycle";
 };
 
 type Row =
-  | { kind: 'header'; key: string; title: string }
-  | { kind: 'item'; key: string; reminder: ReminderViewItem };
+  | { kind: "header"; key: string; title: string }
+  | { kind: "item"; key: string; reminder: ReminderViewItem };
 
+// Only two sections: Upcoming and Completed
 function buildSectionedRows(data: ReminderViewItem[]): Row[] {
-  const upcoming = data.filter(d => !d.completed);
-  const completed = data.filter(d => d.completed);
+  const upcoming = data.filter((d) => !d.completed); // includes overdue too; we just show a badge
+  const completed = data.filter((d) => d.completed);
 
   const rows: Row[] = [
-    { kind: 'header', key: 'hdr-upcoming', title: `Upcoming (${upcoming.length})` },
-    ...upcoming.map<Row>(r => ({ kind: 'item', key: r.id, reminder: r })),
-    { kind: 'header', key: 'hdr-completed', title: `Completed (${completed.length})` },
-    ...completed.map<Row>(r => ({ kind: 'item', key: r.id, reminder: r })),
+    {
+      kind: "header",
+      key: "hdr-upcoming",
+      title: `Upcoming (${upcoming.length})`,
+    },
+    ...upcoming.map<Row>((r) => ({ kind: "item", key: r.id, reminder: r })),
+    {
+      kind: "header",
+      key: "hdr-completed",
+      title: `Completed (${completed.length})`,
+    },
+    ...completed.map<Row>((r) => ({ kind: "item", key: r.id, reminder: r })),
   ];
 
   return rows;
@@ -54,17 +63,19 @@ export default function ReminderList({
   onToggleSelectItem,
   onToggleDone,
   contentTopInset = 0,
-  mode = 'default',
+  mode = "default",
 }: Props) {
   const onScroll = useAnimatedScrollHandler({
-    onScroll: (e) => { if (scrollY) scrollY.value = e.contentOffset.y; },
+    onScroll: (e) => {
+      if (scrollY) scrollY.value = e.contentOffset.y;
+    },
   });
 
   const rows = React.useMemo(() => buildSectionedRows(data), [data]);
 
   const renderRow = React.useCallback(
     ({ item }: ListRenderItemInfo<Row>) => {
-      if (item.kind === 'header') {
+      if (item.kind === "header") {
         return (
           <View style={{ paddingHorizontal: 6, marginTop: 8 }}>
             <SectionHeader title={item.title} />
@@ -82,18 +93,30 @@ export default function ReminderList({
             remindAtISO={r.remindAt}
             completed={r.completed}
             completedAtISO={r.completedAt}
+            due={r.due}
             selectable={selectionMode}
             selected={selected}
             onToggleSelect={() => onToggleSelectItem?.(r.id)}
-            onToggleDone={mode === 'recycle' ? undefined : () => onToggleDone?.(r.id)}
+            onToggleDone={
+              mode === "recycle" ? undefined : () => onToggleDone?.(r.id)
+            }
             onLongPress={() => onLongPressItem?.(r.id)}
             onPress={() => onPressItem?.(r.id)}
             mode={mode}
+            daysLeft={mode === "recycle" ? r.__daysLeft : undefined}
           />
         </View>
       );
     },
-    [selectionMode, selectedIds, onToggleSelectItem, onLongPressItem, onPressItem, onToggleDone, mode]
+    [
+      selectionMode,
+      selectedIds,
+      onToggleSelectItem,
+      onLongPressItem,
+      onPressItem,
+      onToggleDone,
+      mode,
+    ]
   );
 
   const keyExtractor = React.useCallback((r: Row) => r.key, []);
@@ -110,7 +133,7 @@ export default function ReminderList({
       removeClippedSubviews
       initialNumToRender={16}
       windowSize={10}
-      ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+      ItemSeparatorComponent={() => <View style={{ height: 4 }} />}
     />
   );
 }

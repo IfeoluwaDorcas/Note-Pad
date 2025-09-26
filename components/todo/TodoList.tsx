@@ -110,7 +110,7 @@ export default function TodoList({
       removeClippedSubviews
       initialNumToRender={16}
       windowSize={10}
-      ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+      ItemSeparatorComponent={() => <View style={{ height: 4 }} />}
     />
   );
 }

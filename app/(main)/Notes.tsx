@@ -18,7 +18,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { useNotesToolbar } from '@/hooks/useNotesToolbar';
 import * as Haptics from 'expo-haptics';
 
-export default function AllNotes() {
+export default function Notes() {
   const navigation = useNavigation();
   const router = useRouter();
 
@@ -28,7 +28,7 @@ export default function AllNotes() {
 
   const scrollY = useSharedValue(0);
 
-  const toolbar = useNotesToolbar({ scrollY, mode: 'default' });
+  const toolbar = useNotesToolbar({ scrollY, mode: "default" });
 
   const { sortBy, sortDir, view, searchQuery } = useUIStore();
   const { activeNotes, softDelete, restore } = useNotesStore();
@@ -88,7 +88,7 @@ export default function AllNotes() {
       if (selectionMode) {
         toggleSelect(id);
       } else {
-        router.push({ pathname: '/(main)/Editor', params: { id } });
+        router.push({ pathname: "/(main)/Editor", params: { id } });
       }
     },
     [selectionMode, toggleSelect, router]
@@ -147,7 +147,7 @@ export default function AllNotes() {
           <NotesToolbar
             variant="full"
             title="Notes"
-            noun="notes"
+            noun="note"
             total={data.length}
             scrollY={scrollY}
             controller={toolbar}
@@ -175,11 +175,10 @@ export default function AllNotes() {
 
       <ConfirmDialog
         visible={confirmOpen}
+        variant="recycle"
         count={pendingIds.length}
-        label={pendingIds.length === 1 ? 'note' : 'notes'}
-        actionText="will be moved to Recycle Bin"
-        cancelLabel="Cancel"
-        confirmLabel="Move to Recycle bin"
+        noun="note"
+        explicitPlural="notes"
         onCancel={cancelDelete}
         onConfirm={performDelete}
       />
@@ -187,7 +186,7 @@ export default function AllNotes() {
       <FAB
         onPress={() =>
           router.push({
-            pathname: '/(main)/Editor',
+            pathname: "/(main)/Editor",
             params: { id: `new-${Date.now()}` },
           })
         }
@@ -197,7 +196,7 @@ export default function AllNotes() {
         visible={snackOpen}
         message={
           undoIds.length <= 1
-            ? 'Note moved to Recycle Bin'
+            ? "Note moved to Recycle Bin"
             : `${undoIds.length} notes moved to Recycle Bin`
         }
         onAction={() => {
