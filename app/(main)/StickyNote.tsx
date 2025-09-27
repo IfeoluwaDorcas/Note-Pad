@@ -1,21 +1,23 @@
 import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
-import { SafeAreaView } from 'react-native';
-import { useSharedValue } from 'react-native-reanimated';
+import { useSharedValue } from "react-native-reanimated";
 
-import { useNotesToolbar } from '@/hooks/useNotesToolbar';
-import { useStickyStore } from '@/src/state/stickyStore';
-import { useUIStore } from '@/src/state/uiStore';
+import { useNotesToolbar } from "@/hooks/useNotesToolbar";
+import { useStickyStore } from "@/src/state/stickyStore";
+import { useUIStore } from "@/src/state/uiStore";
 
-import ConfirmDialog from '@/components/common/ConfirmDialog';
-import UndoSnackbar from '@/components/feedback/UndoSnackbar';
-import NotesToolbar from '@/components/notes/NotesToolbar';
-import SelectionBar from '@/components/notes/SelectionBar';
+import ConfirmDialog from "@/components/common/ConfirmDialog";
+import UndoSnackbar from "@/components/feedback/UndoSnackbar";
+import NotesToolbar from "@/components/notes/NotesToolbar";
+import SelectionBar from "@/components/notes/SelectionBar";
 
 import FAB from "@/components/common/FAB";
-import CreateStickyDialog, { StickyPayload } from '@/components/sticky/StickyNoteDialog';
-import StickyNoteList from '@/components/sticky/StickyNoteList';
+import Screen from "@/components/Screen";
+import CreateStickyDialog, {
+  StickyPayload,
+} from "@/components/sticky/StickyNoteDialog";
+import StickyNoteList from "@/components/sticky/StickyNoteList";
 
 export default function StickyNotes() {
   const navigation = useNavigation();
@@ -24,36 +26,42 @@ export default function StickyNotes() {
   }, [navigation]);
 
   const scrollY = useSharedValue(0);
-  const toolbar = useNotesToolbar({ scrollY, mode: 'default' });
+  const toolbar = useNotesToolbar({ scrollY, mode: "default" });
 
-  const sortBy     = useUIStore(s => s.sortBy);
-const sortDir    = useUIStore(s => s.sortDir);
-const view       = useUIStore(s => s.view);
-const searchQuery= useUIStore(s => s.searchQuery);
+  const sortBy = useUIStore((s) => s.sortBy);
+  const sortDir = useUIStore((s) => s.sortDir);
+  const view = useUIStore((s) => s.view);
+  const searchQuery = useUIStore((s) => s.searchQuery);
 
-const addSticky    = useStickyStore(s => s.addSticky);
-const updateSticky = useStickyStore(s => s.updateSticky);
-const softDelete   = useStickyStore(s => s.softDelete);
-const restore      = useStickyStore(s => s.restore);
+  const addSticky = useStickyStore((s) => s.addSticky);
+  const updateSticky = useStickyStore((s) => s.updateSticky);
+  const softDelete = useStickyStore((s) => s.softDelete);
+  const restore = useStickyStore((s) => s.restore);
 
-const stickies     = useStickyStore(s => s.stickies);
+  const stickies = useStickyStore((s) => s.stickies);
 
-const base = useMemo(() => {
-  return Object.values(stickies)
-    .filter(n => !n.deletedAt)
-    .sort((a, b) => (b.updatedAt > a.updatedAt ? 1 : -1));
-}, [stickies]);
+  const base = useMemo(() => {
+    return Object.values(stickies)
+      .filter((n) => !n.deletedAt)
+      .sort((a, b) => (b.updatedAt > a.updatedAt ? 1 : -1));
+  }, [stickies]);
   const data = useMemo(() => {
     const q = searchQuery?.trim().toLowerCase();
     const filtered = !q
       ? base
-      : base.filter((n) => n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q));
+      : base.filter(
+          (n) =>
+            n.title.toLowerCase().includes(q) ||
+            n.content.toLowerCase().includes(q)
+        );
     const sorted = [...filtered].sort((a, b) => {
-      if (sortBy === 'title')
-        return sortDir === 'asc' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
-      const A = (sortBy === 'dateCreated' ? a.createdAt : a.updatedAt) || '';
-      const B = (sortBy === 'dateCreated' ? b.createdAt : b.updatedAt) || '';
-      return sortDir === 'asc' ? (A > B ? 1 : -1) : (B > A ? 1 : -1);
+      if (sortBy === "title")
+        return sortDir === "asc"
+          ? a.title.localeCompare(b.title)
+          : b.title.localeCompare(a.title);
+      const A = (sortBy === "dateCreated" ? a.createdAt : a.updatedAt) || "";
+      const B = (sortBy === "dateCreated" ? b.createdAt : b.updatedAt) || "";
+      return sortDir === "asc" ? (A > B ? 1 : -1) : B > A ? 1 : -1;
     });
     return sorted;
   }, [base, searchQuery, sortBy, sortDir]);
@@ -91,23 +99,42 @@ const base = useMemo(() => {
     );
   }, [data]);
 
-  const handleLongPress = useCallback(async (id: string) => {
-    try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
-    enterSelection(id);
-  }, [enterSelection]);
+  const handleLongPress = useCallback(
+    async (id: string) => {
+      try {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      } catch {}
+      enterSelection(id);
+    },
+    [enterSelection]
+  );
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const openEditFor = useCallback((id: string) => { setEditingId(id); setEditOpen(true); }, []);
-  const handlePressNote = useCallback((id: string) => {
-    if (selectionMode) toggleSelect(id);
-    else openEditFor(id);
-  }, [selectionMode, toggleSelect, openEditFor]);
+  const openEditFor = useCallback((id: string) => {
+    setEditingId(id);
+    setEditOpen(true);
+  }, []);
+  const handlePressNote = useCallback(
+    (id: string) => {
+      if (selectionMode) toggleSelect(id);
+      else openEditFor(id);
+    },
+    [selectionMode, toggleSelect, openEditFor]
+  );
 
-  const handleCreate = useCallback((p: StickyPayload) => addSticky(p), [addSticky]);
-  const handleUpdate = useCallback((p: StickyPayload) => { if (editingId) updateSticky(editingId, p); }, [editingId, updateSticky]);
+  const handleCreate = useCallback(
+    (p: StickyPayload) => addSticky(p),
+    [addSticky]
+  );
+  const handleUpdate = useCallback(
+    (p: StickyPayload) => {
+      if (editingId) updateSticky(editingId, p);
+    },
+    [editingId, updateSticky]
+  );
 
   const [undoIds, setUndoIds] = useState<string[]>([]);
   const [snackOpen, setSnackOpen] = useState(false);
@@ -122,8 +149,13 @@ const base = useMemo(() => {
   }, [selectedIds]);
 
   const performDelete = useCallback(() => {
-    if (!pendingIds.length) { setConfirmOpen(false); return; }
-    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+    if (!pendingIds.length) {
+      setConfirmOpen(false);
+      return;
+    }
+    try {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch {}
     pendingIds.forEach((id) => softDelete(id));
     setUndoIds(pendingIds);
     setSnackOpen(true);
@@ -137,7 +169,7 @@ const base = useMemo(() => {
   const editing = editingId ? data.find((n) => n.id === editingId) : undefined;
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <Screen>
       <NotesToolbar
         variant="sticky"
         title="Sticky Notes"
@@ -246,6 +278,6 @@ const base = useMemo(() => {
           setUndoIds([]);
         }}
       />
-    </SafeAreaView>
+    </Screen>
   );
 }

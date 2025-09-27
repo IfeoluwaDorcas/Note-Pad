@@ -4,10 +4,12 @@ import { startDueWatcher, stopDueWatcher } from "@/src/utils/dueWatcher";
 import { PortalProvider } from "@gorhom/portal";
 import { ThemeProvider as NavThemeProvider } from "@react-navigation/native";
 import { Drawer } from "expo-router/drawer";
+import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { I18nManager, View } from "react-native";
 import "react-native-gesture-handler";
 import "react-native-reanimated";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useNotificationResponses } from "../notifications/responses";
 import {
   ensureAndroidChannel,
@@ -41,53 +43,63 @@ export default function MainLayout() {
 
   return (
     <NavThemeProvider value={theme.nav}>
-      <View style={{ flex: 1, backgroundColor: c.bg }}>
-        <PortalProvider>
-          <Drawer
-            screenOptions={{
-              headerStyle: { backgroundColor: c.card },
-              headerTintColor: c.text,
-              drawerStyle: { backgroundColor: c.card },
-              drawerActiveTintColor: c.accent,
-              drawerInactiveTintColor: c.textMuted,
-            }}
-            drawerContent={(props) => <CustomDrawerContent {...props} />}
-          >
-            <Drawer.Screen name="Notes" options={{ title: "Notes" }} />
-            <Drawer.Screen name="Reminders" options={{ title: "Reminders" }} />
-            <Drawer.Screen
-              name="StickyNote"
-              options={{ title: "Sticky notes" }}
-            />
-            <Drawer.Screen name="Todo" options={{ title: "To-do" }} />
-            <Drawer.Screen name="Settings" options={{ title: "Settings" }} />
-            <Drawer.Screen
-              name="DeletedNotes"
-              options={{ title: "Deleted Notes" }}
-            />
-            <Drawer.Screen
-              name="DeletedReminders"
-              options={{ title: "Deleted Reminders" }}
-            />
-            <Drawer.Screen
-              name="DeletedStickyNotes"
-              options={{ title: "Deleted Sticky Notes" }}
-            />
-            <Drawer.Screen
-              name="DeletedTodos"
-              options={{ title: "Deleted To-dos" }}
-            />
-            <Drawer.Screen
-              name="Editor"
-              options={{
-                title: "Editor",
-                drawerItemStyle: { display: "none" },
-                headerShown: false,
+      <SafeAreaProvider>
+        <StatusBar
+          style={theme.nav.dark ? "light" : "dark"}
+          translucent
+          backgroundColor="transparent"
+        />
+        <View style={{ flex: 1, backgroundColor: c.bg }}>
+          <PortalProvider>
+            <Drawer
+              screenOptions={{
+                headerStyle: { backgroundColor: c.card },
+                headerTintColor: c.text,
+                drawerStyle: { backgroundColor: c.card },
+                drawerActiveTintColor: c.accent,
+                drawerInactiveTintColor: c.textMuted,
               }}
-            />
-          </Drawer>
-        </PortalProvider>
-      </View>
+              drawerContent={(props) => <CustomDrawerContent {...props} />}
+            >
+              <Drawer.Screen name="Notes" options={{ title: "Notes" }} />
+              <Drawer.Screen
+                name="Reminders"
+                options={{ title: "Reminders" }}
+              />
+              <Drawer.Screen
+                name="StickyNote"
+                options={{ title: "Sticky notes" }}
+              />
+              <Drawer.Screen name="Todo" options={{ title: "To-do" }} />
+              <Drawer.Screen name="Settings" options={{ title: "Settings" }} />
+              <Drawer.Screen
+                name="DeletedNotes"
+                options={{ title: "Deleted Notes" }}
+              />
+              <Drawer.Screen
+                name="DeletedReminders"
+                options={{ title: "Deleted Reminders" }}
+              />
+              <Drawer.Screen
+                name="DeletedStickyNotes"
+                options={{ title: "Deleted Sticky Notes" }}
+              />
+              <Drawer.Screen
+                name="DeletedTodos"
+                options={{ title: "Deleted To-dos" }}
+              />
+              <Drawer.Screen
+                name="Editor"
+                options={{
+                  title: "Editor",
+                  drawerItemStyle: { display: "none" },
+                  headerShown: false,
+                }}
+              />
+            </Drawer>
+          </PortalProvider>
+        </View>
+      </SafeAreaProvider>
     </NavThemeProvider>
   );
 }

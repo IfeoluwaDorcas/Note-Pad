@@ -1,3 +1,4 @@
+import Screen from "@/components/Screen";
 import { useAppTheme } from "@/providers/ThemeProvider";
 import { router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -51,16 +52,23 @@ export default function Splash() {
   }, []);
 
   return (
-    <View style={[styles.container, { backgroundColor: c.bg }]}>
-      <Image
-        source={require("../assets/images/splash-icon.png")}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-      <Text style={[styles.title, { color: c.accent, fontFamily: theme.tokens.fonts.brand }]}>
-        {typed}
-      </Text>
-    </View>
+    <Screen>
+      <View style={styles.container}>
+        <Image
+          source={require("../assets/images/splash-icon.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text
+          style={[
+            styles.title,
+            { color: c.accent, fontFamily: theme.tokens.fonts.brand },
+          ]}
+        >
+          {typed}
+        </Text>
+      </View>
+    </Screen>
   );
 }
 

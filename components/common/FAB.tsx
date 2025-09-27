@@ -24,7 +24,7 @@ export default function FAB({ onPress, testID }: Props) {
         {
           backgroundColor: theme.tokens.colors.card,
           opacity: pressed ? 0.85 : 1,
-          bottom: 60 + (insets?.bottom ?? 0),
+          bottom: 70 + (insets?.bottom ?? 0),
         },
       ]}
     >

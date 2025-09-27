@@ -361,26 +361,6 @@ export default function CreateReminderDialog({
             />
 
             <Pressable
-              onPress={openDateSheet}
-              style={[
-                s.input,
-                s.pickerLike,
-                { borderRadius: T.radius, backgroundColor: T.colors.card },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel="Pick date"
-            >
-              <Text
-                style={[
-                  s.pickerText,
-                  { color: dateText ? T.colors.text : T.colors.placeholder },
-                ]}
-              >
-                {dateText ? dateLabel : "Date (dd/mm/yyyy)"}
-              </Text>
-            </Pressable>
-
-            <Pressable
               onPress={openTimeSheet}
               style={[
                 s.input,
@@ -397,6 +377,26 @@ export default function CreateReminderDialog({
                 ]}
               >
                 {time || "Time (HH:mm)"}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={openDateSheet}
+              style={[
+                s.input,
+                s.pickerLike,
+                { borderRadius: T.radius, backgroundColor: T.colors.card },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Pick date"
+            >
+              <Text
+                style={[
+                  s.pickerText,
+                  { color: dateText ? T.colors.text : T.colors.placeholder },
+                ]}
+              >
+                {dateText ? dateLabel : "Date (dd/mm/yyyy)"}
               </Text>
             </Pressable>
 

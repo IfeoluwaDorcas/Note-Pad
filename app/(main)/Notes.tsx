@@ -1,22 +1,22 @@
 import { useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
-import { SafeAreaView } from 'react-native';
-import { useSharedValue } from 'react-native-reanimated';
+import { useSharedValue } from "react-native-reanimated";
 
-import { useNotesStore } from '@/src/state/notesStore';
-import { useUIStore } from '@/src/state/uiStore';
-import { filterNotes, sortNotes } from '@/src/utils/notes';
+import { useNotesStore } from "@/src/state/notesStore";
+import { useUIStore } from "@/src/state/uiStore";
+import { filterNotes, sortNotes } from "@/src/utils/notes";
 
-import FAB from '@/components/common/FAB';
-import UndoSnackbar from '@/components/feedback/UndoSnackbar';
-import NotesList from '@/components/notes/NoteList';
-import NotesToolbar from '@/components/notes/NotesToolbar';
-import SelectionBar from '@/components/notes/SelectionBar';
+import FAB from "@/components/common/FAB";
+import UndoSnackbar from "@/components/feedback/UndoSnackbar";
+import NotesList from "@/components/notes/NoteList";
+import NotesToolbar from "@/components/notes/NotesToolbar";
+import SelectionBar from "@/components/notes/SelectionBar";
 
-import ConfirmDialog from '@/components/common/ConfirmDialog';
-import { useNotesToolbar } from '@/hooks/useNotesToolbar';
-import * as Haptics from 'expo-haptics';
+import ConfirmDialog from "@/components/common/ConfirmDialog";
+import Screen from "@/components/Screen";
+import { useNotesToolbar } from "@/hooks/useNotesToolbar";
+import * as Haptics from "expo-haptics";
 
 export default function Notes() {
   const navigation = useNavigation();
@@ -127,7 +127,7 @@ export default function Notes() {
   const TOOLBAR_HEIGHT = 56;
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <Screen>
       <NotesToolbar
         variant="sticky"
         title="Notes"
@@ -208,6 +208,6 @@ export default function Notes() {
           setUndoIds([]);
         }}
       />
-    </SafeAreaView>
+    </Screen>
   );
 }

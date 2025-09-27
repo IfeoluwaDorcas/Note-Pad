@@ -1,10 +1,9 @@
 import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { SafeAreaView } from 'react-native';
-import { useSharedValue } from 'react-native-reanimated';
+import { useSharedValue } from "react-native-reanimated";
 
-import ConfirmDialog from '@/components/common/ConfirmDialog';
+import ConfirmDialog from "@/components/common/ConfirmDialog";
 import FAB from "@/components/common/FAB";
 import UndoSnackbar from "@/components/feedback/UndoSnackbar";
 import NotesToolbar from "@/components/notes/NotesToolbar";
@@ -12,45 +11,59 @@ import SelectionBar from "@/components/notes/SelectionBar";
 import CreateReminderDialog, {
   ReminderPayload,
 } from "@/components/reminder/CreateReminderDialog";
-import ReminderList from '@/components/reminder/ReminderList';
-import { useNotesToolbar } from '@/hooks/useNotesToolbar';
-import { useReminderStore } from '@/src/state/reminderStore';
-import { useUIStore } from '@/src/state/uiStore';
-import { subscribeOpenReminder } from '../notifications/bus';
-import { scheduleReminderNotification } from '../notifications/reminder';
+import ReminderList from "@/components/reminder/ReminderList";
+import Screen from "@/components/Screen";
+import { useNotesToolbar } from "@/hooks/useNotesToolbar";
+import { useReminderStore } from "@/src/state/reminderStore";
+import { useUIStore } from "@/src/state/uiStore";
+import { subscribeOpenReminder } from "../notifications/bus";
+import { scheduleReminderNotification } from "../notifications/reminder";
 
 export default function Reminders() {
   const navigation = useNavigation();
-  useLayoutEffect(() => { navigation.setOptions?.({ headerShown: false }); }, [navigation]);
+  useLayoutEffect(() => {
+    navigation.setOptions?.({ headerShown: false });
+  }, [navigation]);
 
   const scrollY = useSharedValue(0);
-  const toolbar = useNotesToolbar({ scrollY, mode: 'default' });
+  const toolbar = useNotesToolbar({ scrollY, mode: "default" });
 
-  const sortBy      = useUIStore(s => s.sortBy);
-  const sortDir     = useUIStore(s => s.sortDir);
-  const searchQuery = useUIStore(s => s.searchQuery);
+  const sortBy = useUIStore((s) => s.sortBy);
+  const sortDir = useUIStore((s) => s.sortDir);
+  const searchQuery = useUIStore((s) => s.searchQuery);
 
-  const all             = useReminderStore(s => s.reminders);
-  const addReminder     = useReminderStore(s => s.addReminder);
-  const updateReminder  = useReminderStore(s => s.updateReminder);
-  const toggleCompleted = useReminderStore(s => s.toggleCompleted);
-  const softDelete      = useReminderStore(s => s.softDelete);
-  const restore         = useReminderStore(s => s.restore);
+  const all = useReminderStore((s) => s.reminders);
+  const addReminder = useReminderStore((s) => s.addReminder);
+  const updateReminder = useReminderStore((s) => s.updateReminder);
+  const toggleCompleted = useReminderStore((s) => s.toggleCompleted);
+  const softDelete = useReminderStore((s) => s.softDelete);
+  const restore = useReminderStore((s) => s.restore);
 
-  const base = useMemo(() =>
-    Object.values(all).filter(r => !r.deletedAt).sort((a,b)=> (b.updatedAt > a.updatedAt ? 1 : -1))
-  , [all]);
+  const base = useMemo(
+    () =>
+      Object.values(all)
+        .filter((r) => !r.deletedAt)
+        .sort((a, b) => (b.updatedAt > a.updatedAt ? 1 : -1)),
+    [all]
+  );
 
   const data = useMemo(() => {
     const q = searchQuery?.trim().toLowerCase();
-    const filtered = !q ? base : base.filter(r =>
-      r.title.toLowerCase().includes(q) || (r.place ?? '').toLowerCase().includes(q)
-    );
-    const sorted = [...filtered].sort((a,b) => {
-      if (sortBy === 'title') return sortDir === 'asc' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
-      const A = sortBy === 'dateCreated' ? a.createdAt : a.updatedAt;
-      const B = sortBy === 'dateCreated' ? b.createdAt : b.updatedAt;
-      return sortDir === 'asc' ? (A > B ? 1 : -1) : (B > A ? 1 : -1);
+    const filtered = !q
+      ? base
+      : base.filter(
+          (r) =>
+            r.title.toLowerCase().includes(q) ||
+            (r.place ?? "").toLowerCase().includes(q)
+        );
+    const sorted = [...filtered].sort((a, b) => {
+      if (sortBy === "title")
+        return sortDir === "asc"
+          ? a.title.localeCompare(b.title)
+          : b.title.localeCompare(a.title);
+      const A = sortBy === "dateCreated" ? a.createdAt : a.updatedAt;
+      const B = sortBy === "dateCreated" ? b.createdAt : b.updatedAt;
+      return sortDir === "asc" ? (A > B ? 1 : -1) : B > A ? 1 : -1;
     });
     return sorted;
   }, [base, searchQuery, sortBy, sortDir]);
@@ -59,30 +72,55 @@ export default function Reminders() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const enterSelection = useCallback((firstId?: string) => {
     setSelectionMode(true);
-    setSelectedIds(p => { const n = new Set(p); if (firstId) n.add(firstId); return n; });
+    setSelectedIds((p) => {
+      const n = new Set(p);
+      if (firstId) n.add(firstId);
+      return n;
+    });
   }, []);
-  const exitSelection = useCallback(() => { setSelectionMode(false); setSelectedIds(new Set()); }, []);
+  const exitSelection = useCallback(() => {
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+  }, []);
   const toggleSelect = useCallback((id: string) => {
-    setSelectedIds(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
+    setSelectedIds((p) => {
+      const n = new Set(p);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
   }, []);
   const allSelected = selectedIds.size > 0 && selectedIds.size === data.length;
   const toggleSelectAll = useCallback(() => {
     if (!data.length) return;
-    setSelectedIds(p => p.size === data.length ? new Set() : new Set(data.map(r => r.id)));
+    setSelectedIds((p) =>
+      p.size === data.length ? new Set() : new Set(data.map((r) => r.id))
+    );
   }, [data]);
 
-  const handleLongPress = useCallback(async (id: string) => {
-    try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
-    enterSelection(id);
-  }, [enterSelection]);
+  const handleLongPress = useCallback(
+    async (id: string) => {
+      try {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      } catch {}
+      enterSelection(id);
+    },
+    [enterSelection]
+  );
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const openEditFor = useCallback((id: string) => { setEditingId(id); setEditOpen(true); }, []);
-  const handlePressItem = useCallback((id: string) => {
-    if (selectionMode) toggleSelect(id); else openEditFor(id);
-  }, [selectionMode, toggleSelect, openEditFor]);
+  const openEditFor = useCallback((id: string) => {
+    setEditingId(id);
+    setEditOpen(true);
+  }, []);
+  const handlePressItem = useCallback(
+    (id: string) => {
+      if (selectionMode) toggleSelect(id);
+      else openEditFor(id);
+    },
+    [selectionMode, toggleSelect, openEditFor]
+  );
 
   useEffect(() => {
     const unsub = subscribeOpenReminder((rid) => {
@@ -186,7 +224,7 @@ export default function Reminders() {
     : undefined;
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <Screen>
       <NotesToolbar
         variant="sticky"
         title="Reminders"
@@ -291,6 +329,6 @@ export default function Reminders() {
           setUndoIds([]);
         }}
       />
-    </SafeAreaView>
+    </Screen>
   );
 }
