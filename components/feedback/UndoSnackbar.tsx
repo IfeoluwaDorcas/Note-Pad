@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useAppTheme } from "@/providers/ThemeProvider";
+import React, { useEffect, useRef } from "react";
+import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 
 type Props = {
   visible: boolean;
@@ -11,17 +12,34 @@ type Props = {
 };
 
 export default function UndoSnackbar({
-  visible, message, actionLabel = 'UNDO', durationMs = 3500, onAction, onHide,
+  visible,
+  message,
+  actionLabel = "UNDO",
+  durationMs = 3500,
+  onAction,
+  onHide,
 }: Props) {
   const y = useRef(new Animated.Value(80)).current;
 
+  const { theme } = useAppTheme();
+
+  const c = theme.tokens.colors;
+
   useEffect(() => {
     if (visible) {
-      Animated.timing(y, { toValue: 0, duration: 180, useNativeDriver: true }).start();
+      Animated.timing(y, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
       const t = setTimeout(() => onHide?.(), durationMs);
       return () => clearTimeout(t);
     } else {
-      Animated.timing(y, { toValue: 80, duration: 160, useNativeDriver: true }).start();
+      Animated.timing(y, {
+        toValue: 80,
+        duration: 160,
+        useNativeDriver: true,
+      }).start();
     }
   }, [visible]);
 
@@ -30,10 +48,12 @@ export default function UndoSnackbar({
   return (
     <Animated.View style={[s.wrap, { transform: [{ translateY: y }] }]}>
       <View style={s.snack}>
-        <Text style={s.text} numberOfLines={2}>{message}</Text>
+        <Text style={s.text} numberOfLines={2}>
+          {message}
+        </Text>
         {!!onAction && (
           <Pressable onPress={onAction} style={s.btn}>
-            <Text style={s.btnText}>{actionLabel}</Text>
+            <Text style={[s.btnText, { color: c.text }]}>{actionLabel}</Text>
           </Pressable>
         )}
       </View>
@@ -41,9 +61,17 @@ export default function UndoSnackbar({
   );
 }
 const s = StyleSheet.create({
-  wrap:{ position:'absolute', left:12, right:12, bottom:12 },
-  snack:{ flexDirection:'row', alignItems:'center', justifyContent:'space-between', paddingHorizontal:14, paddingVertical:10, borderRadius:12, backgroundColor:'#1B1B1B' },
-  text:{ color:'#fff', flex:1, marginRight:12 },
-  btn:{ paddingHorizontal:8, paddingVertical:6, borderRadius:8 },
-  btnText:{ color:'#BFA15A', fontWeight:'700' },
+  wrap: { position: "absolute", left: 12, right: 12, bottom: 12 },
+  snack: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: "#1B1B1B",
+  },
+  text: { color: "#fff", flex: 1, marginRight: 12 },
+  btn: { paddingHorizontal: 8, paddingVertical: 6, borderRadius: 8 },
+  btnText: { fontWeight: "700" },
 });

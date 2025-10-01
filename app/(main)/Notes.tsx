@@ -184,12 +184,14 @@ export default function Notes() {
       />
 
       <FAB
-        onPress={() =>
+        onPress={() => {
+          const nonce = String(Date.now());
           router.push({
             pathname: "/(main)/Editor",
-            params: { id: `new-${Date.now()}` },
-          })
-        }
+            params: { type: "note", nonce },
+          });
+        }}
+        testID="fab-new-note"
       />
 
       <UndoSnackbar

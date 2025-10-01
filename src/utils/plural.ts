@@ -1,9 +1,8 @@
-// src/utils/plural.ts
 const IRREGULAR: Record<string, string> = {
-  note: 'notes',
-  reminder: 'reminders',
-  list: 'lists',
-  pin: 'pins',
+  note: "notes",
+  reminder: "reminders",
+  list: "lists",
+  pin: "pins",
 };
 
 function normalize(noun: string) {
@@ -12,7 +11,11 @@ function normalize(noun: string) {
   return { base, key };
 }
 
-export function pluralize(noun: string, count: number, explicitPlural?: string): string {
+export function pluralize(
+  noun: string,
+  count: number,
+  explicitPlural?: string
+): string {
   const { base, key } = normalize(noun);
 
   if (count === 1 || count === 0) return base;
@@ -22,11 +25,15 @@ export function pluralize(noun: string, count: number, explicitPlural?: string):
 
   if (/[^s]s$/i.test(base) || /\w-\w+s$/i.test(base)) return base;
 
-  if (/\b[^aeiou]y$/i.test(base)) return base.replace(/y$/i, 'ies');
-  if (/(s|x|z|ch|sh)$/i.test(base)) return base + 'es';
-  return base + 's';
+  if (/\b[^aeiou]y$/i.test(base)) return base.replace(/y$/i, "ies");
+  if (/(s|x|z|ch|sh)$/i.test(base)) return base + "es";
+  return base + "s";
 }
 
-export function countLabel(count: number, noun: string, explicitPlural?: string): string {
+export function countLabel(
+  count: number,
+  noun: string,
+  explicitPlural?: string
+): string {
   return `${count} ${pluralize(noun, count, explicitPlural)}`;
 }

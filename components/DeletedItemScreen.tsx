@@ -1,6 +1,5 @@
-// components/DeletedItemScreen.tsx
-import { useNavigation } from '@react-navigation/native';
-import React, { useLayoutEffect } from 'react';
+import { useNavigation } from "@react-navigation/native";
+import React, { useLayoutEffect } from "react";
 import { Text, View } from "react-native";
 
 import ConfirmDialog from "@/components/common/ConfirmDialog";
@@ -13,7 +12,7 @@ import StickyNoteList from "@/components/sticky/StickyNoteList";
 import TodoList from "@/components/todo/TodoList";
 import { useRecycleScreen } from "@/hooks/useRecycleScreen";
 import { useAppTheme } from "@/providers/ThemeProvider";
-import { pluralize } from "@/src/utils/plural"; // keep for the snackbar only
+import { pluralize } from "@/src/utils/plural";
 import Screen from "./Screen";
 
 const TOOLBAR_HEIGHT = 56;
@@ -30,7 +29,7 @@ function BinInfoLine() {
 }
 
 type DeletedItemScreenProps = {
-  type: 'note' | 'reminder' | 'sticky' | 'todo';
+  type: "note" | "reminder" | "sticky" | "todo";
   title: string;
   label: string;
   pluralLabel?: string;
@@ -57,6 +56,7 @@ export default function DeletedItemScreen({
     undoIds,
     snackOpen,
     confirmOpen,
+    pendingIds,
     handlePressNote,
     handleLongPress,
     enterSelection,
@@ -76,11 +76,23 @@ export default function DeletedItemScreen({
   const restoredMsg =
     undoIds.length <= 1
       ? `${label.charAt(0).toUpperCase() + label.slice(1)} restored`
-      : `${undoIds.length} ${pluralize(label, undoIds.length, pluralLabel)} restored`;
+      : `${undoIds.length} ${pluralize(
+          label,
+          undoIds.length,
+          pluralLabel
+        )} restored`;
+
+  const confirmMessageOverride =
+    pendingIds.length > 0
+      ? `${pendingIds.length} ${pluralize(
+          label,
+          pendingIds.length,
+          pluralLabel
+        )} will be permanently deleted`
+      : undefined;
 
   return (
     <Screen>
-      {/* Compact sticky toolbar */}
       <NotesToolbar
         variant="sticky"
         title={title}
@@ -93,7 +105,6 @@ export default function DeletedItemScreen({
         onEmptyBin={handleEmptyBin}
       />
 
-      {/* Content */}
       {type === "sticky" ? (
         <StickyNoteList
           data={data as any}
@@ -218,7 +229,6 @@ export default function DeletedItemScreen({
         />
       )}
 
-      {/* Selection bar for bin actions */}
       {selectionMode && !confirmOpen && (
         <RecycleSelectionBar
           count={selectedIds.size}
@@ -228,18 +238,17 @@ export default function DeletedItemScreen({
         />
       )}
 
-      {/* Permanent delete confirm */}
       <ConfirmDialog
         visible={confirmOpen}
         variant="permanent"
-        count={selectedIds.size}
+        count={pendingIds.length}
         noun={label}
         explicitPlural={pluralLabel}
         onCancel={cancelDelete}
         onConfirm={performDeleteForever}
+        messageOverride={confirmMessageOverride}
       />
 
-      {/* Undo snackbar */}
       <UndoSnackbar
         visible={snackOpen}
         message={restoredMsg}

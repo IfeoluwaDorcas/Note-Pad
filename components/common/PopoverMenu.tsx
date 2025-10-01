@@ -1,5 +1,6 @@
-import { useAppTheme } from '@/providers/ThemeProvider';
-import React, { useEffect, useRef, useState } from 'react';
+// components/common/PopoverMenu.tsx
+import { useAppTheme } from "@/providers/ThemeProvider";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -9,9 +10,8 @@ import {
   Text as RNText,
   StyleSheet,
   TextProps,
-  UIManager,
   View,
-} from 'react-native';
+} from "react-native";
 
 export type Item = {
   key: string;
@@ -41,7 +41,10 @@ export default function PopoverMenu({
   const { theme } = useAppTheme();
   const c = theme.tokens.colors;
 
-  const [pos, setPos] = useState<{ top: number; right: number }>({ top: 80, right: 16 });
+  const [pos, setPos] = useState<{ top: number; right: number }>({
+    top: 80,
+    right: 16,
+  });
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.98)).current;
 
@@ -49,33 +52,46 @@ export default function PopoverMenu({
     if (!visible) return;
 
     const placeMenu = () => {
-      if (Platform.OS === 'web') {
-        const el = anchorRef.current as unknown as { getBoundingClientRect?: () => DOMRect } | null;
+      if (Platform.OS === "web") {
+        const el = anchorRef.current as unknown as {
+          getBoundingClientRect?: () => DOMRect;
+        } | null;
         const rect = el?.getBoundingClientRect?.();
         if (!rect) return;
 
         const screenW =
-          typeof window !== 'undefined' ? window.innerWidth : Dimensions.get('window').width;
+          typeof window !== "undefined"
+            ? window.innerWidth
+            : Dimensions.get("window").width;
         const right = Math.max(8, Math.round(screenW - rect.right));
         const top = Math.round(rect.bottom + topOffset);
         setPos({ top, right });
       } else {
-        const node =
-          (anchorRef.current as any)?._internalFiberInstanceHandleDEV?.stateNode ??
-          (anchorRef.current as any);
-        if (!node) return;
+        // Fabric-safe: use instance method on the native view
+        requestAnimationFrame(() => {
+          const node = anchorRef.current as any;
+          if (!node || typeof node.measureInWindow !== "function") return;
 
-        UIManager.measureInWindow(node, (x, y, w, h) => {
-          const screenW = Dimensions.get('window').width;
-          const right = Math.max(8, Math.round(screenW - (x + w)));
-          const top = Math.round(y + h + topOffset);
-          setPos({ top, right });
+          node.measureInWindow((x: number, y: number, w: number, h: number) => {
+            const screenW = Dimensions.get("window").width;
+            const right = Math.max(8, Math.round(screenW - (x + w)));
+            const top = Math.round(y + h + topOffset);
+            setPos({ top, right });
+          });
         });
       }
 
       Animated.parallel([
-        Animated.timing(opacity, { toValue: 1, duration: 120, useNativeDriver: true }),
-        Animated.timing(scale, { toValue: 1, duration: 120, useNativeDriver: true }),
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 120,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scale, {
+          toValue: 1,
+          duration: 120,
+          useNativeDriver: true,
+        }),
       ]).start();
     };
 
@@ -85,17 +101,19 @@ export default function PopoverMenu({
       opacity.setValue(0);
       scale.setValue(0.98);
     };
-  }, [visible]);
+  }, [visible, anchorRef, topOffset, opacity, scale]);
 
   if (!visible) return null;
 
-  const isRNTextElement = (node: React.ReactNode): node is React.ReactElement<TextProps> =>
+  const isRNTextElement = (
+    node: React.ReactNode
+  ): node is React.ReactElement<TextProps> =>
     React.isValidElement(node) && node.type === RNText;
 
-  const renderLabel = (label: Item['label'], destructive?: boolean) => {
+  const renderLabel = (label: Item["label"], destructive?: boolean) => {
     const textColor = destructive ? c.accentMuted : c.text;
 
-    if (typeof label === 'string') {
+    if (typeof label === "string") {
       return (
         <RNText style={[s.label, { color: textColor }]} numberOfLines={1}>
           {label}
@@ -129,7 +147,6 @@ export default function PopoverMenu({
           },
         ]}
       >
-
         {items.map((it, i) => (
           <Pressable
             key={it.key}
@@ -137,10 +154,13 @@ export default function PopoverMenu({
               it.onPress();
               onClose();
             }}
-            android_ripple={{ color: 'rgba(0,0,0,0.08)', borderless: false }}
+            android_ripple={{ color: "rgba(0,0,0,0.08)", borderless: false }}
             style={[
               s.row,
-              i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.border },
+              i > 0 && {
+                borderTopWidth: StyleSheet.hairlineWidth,
+                borderTopColor: c.border,
+              },
             ]}
           >
             {renderLabel(it.label, it.destructive)}
@@ -154,33 +174,20 @@ export default function PopoverMenu({
 
 const s = StyleSheet.create({
   menu: {
-    position: 'absolute',
+    position: "absolute",
     borderRadius: 16,
     paddingVertical: 6,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOpacity: 0.12,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
     elevation: 12,
   },
-  arrow: {
-    position: 'absolute',
-    top: -6,
-    right: 20,
-    width: 12,
-    height: 12,
-    transform: [{ rotate: '45deg' }],
-    borderRadius: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-  },
   row: {
     minHeight: 35,
     paddingHorizontal: 14,
-    alignItems: 'center',
-    flexDirection: 'row',
+    alignItems: "center",
+    flexDirection: "row",
     gap: 12,
   },
   label: {
@@ -188,6 +195,6 @@ const s = StyleSheet.create({
     lineHeight: 20,
   },
   right: {
-    marginLeft: 'auto',
+    marginLeft: "auto",
   },
 });

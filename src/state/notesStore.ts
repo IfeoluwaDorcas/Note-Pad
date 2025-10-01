@@ -4,9 +4,19 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-function firstLine(str: string) {
-  const line = (str || "").split(/\r?\n/)[0]?.trim() ?? "";
-  return line || "Untitled";
+function firstLineFromHtml(html: string) {
+  const txt = (html || "")
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<\/?(div|p|br)\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .split(/\r?\n/)[0]
+    .trim();
+  return txt || "Untitled";
 }
 
 type NotesState = {
@@ -52,11 +62,15 @@ export const useNotesStore = create<NotesState>()(
       add: (n) => {
         const now = new Date().toISOString();
         const id = n.id ?? uid();
-        const title = n.title ?? firstLine(n.content ?? "");
+        const content = n.content ?? "";
+        const title =
+          (n.title && n.title.trim().length
+            ? n.title
+            : firstLineFromHtml(content)) || "Untitled";
         const newNote: Note = {
           id,
           title,
-          content: n.content ?? "",
+          content,
           previewImage: n.previewImage,
           createdAt: now,
           updatedAt: now,
@@ -65,7 +79,10 @@ export const useNotesStore = create<NotesState>()(
           pinned: n.pinned,
           categoryId: n.categoryId,
         };
-        set((s) => ({ notes: [...s.notes, newNote] }));
+        set((s) => {
+          const withoutDup = s.notes.filter((x) => x.id !== id);
+          return { notes: [...withoutDup, newNote] };
+        });
         return newNote;
       },
 
@@ -74,8 +91,14 @@ export const useNotesStore = create<NotesState>()(
           notes: s.notes.map((n) => {
             if (n.id !== id) return n;
             const merged = { ...n, ...patch };
-            if ("content" in patch && !("title" in patch))
-              merged.title = firstLine(patch.content ?? "");
+            if ("content" in patch && !("title" in patch)) {
+              const keepExisting =
+                merged.title &&
+                merged.title.trim().length &&
+                merged.title !== "Untitled";
+              if (!keepExisting)
+                merged.title = firstLineFromHtml(patch.content ?? "");
+            }
             return { ...merged, updatedAt: new Date().toISOString() };
           }),
         })),

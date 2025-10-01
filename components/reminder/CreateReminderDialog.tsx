@@ -1,4 +1,4 @@
-import { useAppTheme } from '@/providers/ThemeProvider';
+import { useAppTheme } from "@/providers/ThemeProvider";
 import {
   addDays,
   addHours,
@@ -22,6 +22,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from "react-native";
 
 export type ReminderPayload = {
@@ -49,6 +50,10 @@ type Props = {
 
 const ITEM_HEIGHT = 36;
 
+function clamp(n: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, n));
+}
+
 type NumberWheelProps = {
   range: number[];
   value: number;
@@ -67,6 +72,9 @@ const NumberWheel: React.FC<NumberWheelProps> = ({
   width = 72,
 }) => {
   const listRef = React.useRef<FlatList<number>>(null);
+  const { width: winW } = useWindowDimensions();
+  const selectedSize = clamp(Math.floor(winW * 0.085), 16, 40);
+  const unselectedSize = clamp(Math.floor(selectedSize * 0.55), 12, 20);
   const containerPad = (112 - ITEM_HEIGHT) / 2;
 
   useEffect(() => {
@@ -84,8 +92,7 @@ const NumberWheel: React.FC<NumberWheelProps> = ({
   ) => {
     const y = e.nativeEvent.contentOffset.y;
     const idx = Math.round(y / ITEM_HEIGHT);
-    const clampedIdx = Math.max(0, Math.min(idx, range.length - 1));
-    onChange(range[clampedIdx]);
+    onChange(range[clamp(idx, 0, range.length - 1)]);
   };
 
   const renderItem: ListRenderItem<number> = ({ item }) => {
@@ -99,8 +106,10 @@ const NumberWheel: React.FC<NumberWheelProps> = ({
         }}
       >
         <Text
+          maxFontSizeMultiplier={1}
+          allowFontScaling={false}
           style={{
-            fontSize: isSelected ? 44 : 22,
+            fontSize: isSelected ? selectedSize : unselectedSize,
             fontWeight: (isSelected ? "800" : "400") as any,
             color: isSelected ? textColor : fadedColor,
             opacity: isSelected ? 1 : 0.45,
@@ -128,7 +137,12 @@ const NumberWheel: React.FC<NumberWheelProps> = ({
         keyExtractor={(n) => String(n)}
         showsVerticalScrollIndicator={false}
         snapToInterval={ITEM_HEIGHT}
+        snapToAlignment="start"
         decelerationRate="fast"
+        overScrollMode="never"
+        bounces={false}
+        removeClippedSubviews={false}
+        scrollEventThrottle={16}
         getItemLayout={(_, index) => ({
           length: ITEM_HEIGHT,
           offset: ITEM_HEIGHT * index,
@@ -156,6 +170,8 @@ export default function CreateReminderDialog({
 }: Props) {
   const { theme } = useAppTheme();
   const T = theme.tokens;
+  const { width: winW } = useWindowDimensions();
+  const sheetHorizontal = winW < 360 ? 14 : 20;
 
   const [title, setTitle] = useState(initial?.title ?? "");
   const [place, setPlace] = useState(initial?.place ?? "");
@@ -171,6 +187,8 @@ export default function CreateReminderDialog({
 
   const [showDateSheet, setShowDateSheet] = useState(false);
   const [showTimeSheet, setShowTimeSheet] = useState(false);
+  const hasSheet = showDateSheet || showTimeSheet;
+
   const [pickH, setPickH] = useState(12);
   const [pickM, setPickM] = useState(0);
 
@@ -242,7 +260,6 @@ export default function CreateReminderDialog({
   );
 
   const openDateSheet = () => setShowDateSheet(true);
-
   const openTimeSheet = () => {
     const base = new Date();
     if (validHHMM(time)) {
@@ -312,14 +329,29 @@ export default function CreateReminderDialog({
     { length: daysInMonth(pickY, pickMo) },
     (_, i) => i + 1
   );
-
   const dateLabel = friendlyDate(pickY, pickMo, pickD);
+
+  const sheetProps = {
+    backgroundColor: T.colors.bg,
+    borderRadius: T.radius,
+    zIndex: 30 as const,
+    elevation: 30,
+    paddingHorizontal: sheetHorizontal,
+  };
 
   return (
     <Portal>
-      <Pressable onPress={onClose} style={s.backdrop} />
+      {/* BASE BACKDROP & CARD */}
+      <Pressable
+        onPress={onClose}
+        style={s.backdrop}
+        pointerEvents={hasSheet ? "none" : "auto"}
+      />
 
-      <View pointerEvents="box-none" style={s.centerLayer}>
+      <View
+        pointerEvents={hasSheet ? "none" : "box-none"}
+        style={s.centerLayer}
+      >
         <KeyboardAvoidingView
           enabled={Platform.OS === "ios"}
           behavior="padding"
@@ -329,11 +361,18 @@ export default function CreateReminderDialog({
             onStartShouldSetResponder={() => true}
             style={[
               s.card,
-              { backgroundColor: T.colors.bg, borderRadius: T.radius },
+              {
+                backgroundColor: T.colors.bg,
+                borderRadius: T.radius,
+                paddingHorizontal: sheetHorizontal,
+              },
             ]}
           >
             <View style={s.header}>
-              <Text style={[s.h, { color: T.colors.text }]}>
+              <Text
+                maxFontSizeMultiplier={1.1}
+                style={[s.h, { color: T.colors.text }]}
+              >
                 {mode === "edit" ? "Edit Reminder" : "New Reminder"}
               </Text>
               <Pressable hitSlop={10} onPress={onClose}>
@@ -347,6 +386,7 @@ export default function CreateReminderDialog({
               placeholder="Title"
               placeholderTextColor={T.colors.placeholder}
               maxLength={75}
+              allowFontScaling={false}
               style={[
                 s.input,
                 s.inputTitle,
@@ -371,6 +411,8 @@ export default function CreateReminderDialog({
               accessibilityLabel="Pick time"
             >
               <Text
+                numberOfLines={1}
+                maxFontSizeMultiplier={1.1}
                 style={[
                   s.pickerText,
                   { color: time ? T.colors.text : T.colors.placeholder },
@@ -391,6 +433,8 @@ export default function CreateReminderDialog({
               accessibilityLabel="Pick date"
             >
               <Text
+                numberOfLines={1}
+                maxFontSizeMultiplier={1.1}
                 style={[
                   s.pickerText,
                   { color: dateText ? T.colors.text : T.colors.placeholder },
@@ -405,6 +449,7 @@ export default function CreateReminderDialog({
               onChangeText={setPlace}
               placeholder="Place (optional)"
               placeholderTextColor={T.colors.placeholder}
+              allowFontScaling={false}
               style={[
                 s.input,
                 {
@@ -419,7 +464,10 @@ export default function CreateReminderDialog({
 
             <View style={s.actions}>
               <Pressable onPress={onClose} style={[s.btn, s.ghost]}>
-                <Text style={[s.btnText, { color: T.colors.text }]}>
+                <Text
+                  maxFontSizeMultiplier={1.1}
+                  style={[s.btnText, { color: T.colors.text }]}
+                >
                   Cancel
                 </Text>
               </Pressable>
@@ -436,7 +484,12 @@ export default function CreateReminderDialog({
                   },
                 ]}
               >
-                <Text style={[s.btnText, { color: "#fff" }]}>{btnText}</Text>
+                <Text
+                  maxFontSizeMultiplier={1.1}
+                  style={[s.btnText, { color: "#fff" }]}
+                >
+                  {btnText}
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -448,22 +501,30 @@ export default function CreateReminderDialog({
         <>
           <Pressable
             onPress={() => setShowDateSheet(false)}
-            style={s.backdrop}
+            style={[s.backdrop, { zIndex: 20 }]}
           />
           <View pointerEvents="box-none" style={s.centerLayer}>
-            <View
-              style={[
-                s.sheet,
-                { backgroundColor: T.colors.bg, borderRadius: T.radius },
-              ]}
-            >
+            <View style={[s.sheet, sheetProps]}>
               <View style={s.sheetHeader}>
                 <Pressable onPress={() => setShowDateSheet(false)}>
-                  <Text style={{ color: T.colors.text }}>Cancel</Text>
+                  <Text
+                    maxFontSizeMultiplier={1.1}
+                    style={{ color: T.colors.text }}
+                  >
+                    Cancel
+                  </Text>
                 </Pressable>
-                <Text style={[s.h, { color: T.colors.text }]}>Date</Text>
+                <Text
+                  maxFontSizeMultiplier={1.1}
+                  style={[s.h, { color: T.colors.text }]}
+                >
+                  Date
+                </Text>
                 <Pressable onPress={applyDate}>
-                  <Text style={{ color: T.colors.accent, fontWeight: "700" }}>
+                  <Text
+                    maxFontSizeMultiplier={1.1}
+                    style={{ color: T.colors.accent, fontWeight: "700" }}
+                  >
                     Set
                   </Text>
                 </Pressable>
@@ -495,7 +556,12 @@ export default function CreateReminderDialog({
                   </Pressable>
                 </View>
 
-                <Text style={[s.sep, { color: T.colors.text }]}>-</Text>
+                <Text
+                  maxFontSizeMultiplier={1}
+                  style={[s.sep, { color: T.colors.text }]}
+                >
+                  -
+                </Text>
 
                 <View style={s.col}>
                   <Pressable
@@ -522,7 +588,12 @@ export default function CreateReminderDialog({
                   </Pressable>
                 </View>
 
-                <Text style={[s.sep, { color: T.colors.text }]}>-</Text>
+                <Text
+                  maxFontSizeMultiplier={1}
+                  style={[s.sep, { color: T.colors.text }]}
+                >
+                  -
+                </Text>
 
                 <View style={s.col}>
                   <Pressable
@@ -552,46 +623,65 @@ export default function CreateReminderDialog({
                 </View>
               </View>
 
-              {/* ✅ Presets with Everyday toggle */}
               <View style={s.presetRow}>
-                <Pressable
-                  onPress={() => setPresetDate(0)}
-                  style={[s.presetBtn, { backgroundColor: T.colors.card }]}
-                >
-                  <Text
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                    style={[s.presetText, { color: T.colors.text }]}
+                <View style={s.twoColRow}>
+                  <Pressable
+                    onPress={() => setPresetDate(0)}
+                    style={[
+                      s.presetBtnEqual,
+                      { backgroundColor: T.colors.card },
+                    ]}
                   >
-                    Today
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => setPresetDate(1)}
-                  style={[s.presetBtn, { backgroundColor: T.colors.card }]}
-                >
-                  <Text
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                    style={[s.presetText, { color: T.colors.text }]}
+                    <Text
+                      numberOfLines={1}
+                      maxFontSizeMultiplier={1.1}
+                      style={[
+                        s.presetText,
+                        { color: T.colors.text, textAlign: "center" },
+                      ]}
+                    >
+                      Today
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setPresetDate(1)}
+                    style={[
+                      s.presetBtnEqual,
+                      { backgroundColor: T.colors.card },
+                    ]}
                   >
-                    Tomorrow
-                  </Text>
-                </Pressable>
+                    <Text
+                      numberOfLines={1}
+                      maxFontSizeMultiplier={1.1}
+                      style={[
+                        s.presetText,
+                        { color: T.colors.text, textAlign: "center" },
+                      ]}
+                    >
+                      Tomorrow
+                    </Text>
+                  </Pressable>
+                </View>
 
                 <View style={s.chipsRow}>
                   <Pressable
                     onPress={() => setPresetDate(7)}
-                    style={[s.presetChip, { backgroundColor: T.colors.card }]}
+                    style={[
+                      s.presetChipEqual,
+                      { backgroundColor: T.colors.card },
+                    ]}
                   >
-                    <Text style={{ color: T.colors.text }}>1 week</Text>
+                    <Text
+                      maxFontSizeMultiplier={1.1}
+                      style={{ color: T.colors.text }}
+                    >
+                      1 week
+                    </Text>
                   </Pressable>
-
-                  {/* Everyday toggle chip */}
                   <Pressable
                     onPress={() => setRepeatDaily((v) => !v)}
                     style={[
-                      s.presetChip,
+                      s.presetChipEqual,
                       {
                         backgroundColor: repeatDaily
                           ? T.colors.accent
@@ -602,6 +692,7 @@ export default function CreateReminderDialog({
                     ]}
                   >
                     <Text
+                      maxFontSizeMultiplier={1.1}
                       style={{ color: repeatDaily ? "#fff" : T.colors.text }}
                     >
                       Everyday
@@ -619,22 +710,30 @@ export default function CreateReminderDialog({
         <>
           <Pressable
             onPress={() => setShowTimeSheet(false)}
-            style={s.backdrop}
+            style={[s.backdrop, { zIndex: 20 }]}
           />
           <View pointerEvents="box-none" style={s.centerLayer}>
-            <View
-              style={[
-                s.sheet,
-                { backgroundColor: T.colors.bg, borderRadius: T.radius },
-              ]}
-            >
+            <View style={[s.sheet, sheetProps]}>
               <View style={s.sheetHeader}>
                 <Pressable onPress={() => setShowTimeSheet(false)}>
-                  <Text style={{ color: T.colors.text }}>Cancel</Text>
+                  <Text
+                    maxFontSizeMultiplier={1.1}
+                    style={{ color: T.colors.text }}
+                  >
+                    Cancel
+                  </Text>
                 </Pressable>
-                <Text style={[s.h, { color: T.colors.text }]}>Time</Text>
+                <Text
+                  maxFontSizeMultiplier={1.1}
+                  style={[s.h, { color: T.colors.text }]}
+                >
+                  Time
+                </Text>
                 <Pressable onPress={applyTime}>
-                  <Text style={{ color: T.colors.accent, fontWeight: "700" }}>
+                  <Text
+                    maxFontSizeMultiplier={1.1}
+                    style={{ color: T.colors.accent, fontWeight: "700" }}
+                  >
                     Set
                   </Text>
                 </Pressable>
@@ -658,7 +757,12 @@ export default function CreateReminderDialog({
                   </Pressable>
                 </View>
 
-                <Text style={[s.colon, { color: T.colors.text }]}>:</Text>
+                <Text
+                  maxFontSizeMultiplier={1}
+                  style={[s.colon, { color: T.colors.text }]}
+                >
+                  :
+                </Text>
 
                 <View style={s.col}>
                   <Pressable onPress={incM} hitSlop={8} style={s.chev}>
@@ -679,31 +783,48 @@ export default function CreateReminderDialog({
               </View>
 
               <View style={s.presetRow}>
-                <Pressable
-                  onPress={() => {
-                    const d = addHours(new Date(), 1);
-                    setPickH(d.getHours());
-                    setPickM(d.getMinutes());
-                  }}
-                  style={[s.presetBtn, { backgroundColor: T.colors.card }]}
-                >
-                  <Text
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                    style={[s.presetText, { color: T.colors.text }]}
+                <View style={s.twoColRow}>
+                  <Pressable
+                    onPress={() => {
+                      const d = addHours(new Date(), 1);
+                      setPickH(d.getHours());
+                      setPickM(d.getMinutes());
+                    }}
+                    style={[
+                      s.presetBtnEqual,
+                      { backgroundColor: T.colors.card },
+                    ]}
                   >
-                    1 hour from now
-                  </Text>
-                </Pressable>
+                    <Text
+                      numberOfLines={1}
+                      maxFontSizeMultiplier={1.1}
+                      style={[
+                        s.presetText,
+                        { color: T.colors.text, textAlign: "center" },
+                      ]}
+                    >
+                      1 hour from now
+                    </Text>
+                  </Pressable>
+                  <View style={{ flex: 1, marginHorizontal: 4 }} />
+                </View>
 
                 <View style={s.chipsRow}>
                   {["07:00", "15:00", "22:00"].map((preset) => (
                     <Pressable
                       key={preset}
                       onPress={() => setPresetTime(preset)}
-                      style={[s.presetChip, { backgroundColor: T.colors.card }]}
+                      style={[
+                        s.presetChipEqual,
+                        { backgroundColor: T.colors.card },
+                      ]}
                     >
-                      <Text style={{ color: T.colors.text }}>{preset}</Text>
+                      <Text
+                        maxFontSizeMultiplier={1.1}
+                        style={{ color: T.colors.text }}
+                      >
+                        {preset}
+                      </Text>
                     </Pressable>
                   ))}
                 </View>
@@ -717,82 +838,110 @@ export default function CreateReminderDialog({
 }
 
 const s = StyleSheet.create({
-  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.25)' },
-  centerLayer: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center' },
-  kav: { width: '100%', alignItems: 'center' },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.25)",
+  },
+  centerLayer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  kav: { width: "100%", alignItems: "center" },
+
   card: {
-    width: '90%',
+    width: "90%",
     minWidth: 300,
     maxWidth: 520,
-    padding: 20,
-    alignSelf: 'center',
-    shadowColor: '#000',
+    paddingVertical: 20,
+    alignSelf: "center",
+    shadowColor: "#000",
     shadowOpacity: 0.15,
     shadowRadius: 14,
     elevation: 10,
   },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  h: { fontSize: 18, fontWeight: '700' },
-  input: { borderWidth: 0, paddingHorizontal: 14, paddingVertical: 10, marginTop: 14 },
-  inputTitle: { fontWeight: '700' },
-  pickerLike: { justifyContent: 'center' },
-  pickerText: { fontSize: 16, fontWeight: '600' },
-  actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 14, marginTop: 24 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  h: { fontSize: 18, fontWeight: "700" },
+
+  input: {
+    borderWidth: 0,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginTop: 14,
+  },
+  inputTitle: { fontWeight: "700" },
+  pickerLike: { justifyContent: "center" },
+  pickerText: { fontSize: 16, fontWeight: "600" },
+
+  actions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 14,
+    marginTop: 24,
+  },
   btn: { paddingHorizontal: 18, paddingVertical: 12, borderRadius: 14 },
-  btnText: { fontWeight: '700' },
-  ghost: { backgroundColor: 'transparent' },
+  btnText: { fontWeight: "700" },
+  ghost: { backgroundColor: "transparent" },
+
   sheet: {
-    width: '90%',
+    width: "90%",
     maxWidth: 520,
-    padding: 20,
-    shadowColor: '#000',
+    paddingVertical: 20,
+    shadowColor: "#000",
     shadowOpacity: 0.15,
     shadowRadius: 14,
     elevation: 10,
   },
   sheetHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 8,
     paddingBottom: 10,
   },
-  timeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 6 },
-  col: { alignItems: 'center' },
+
+  timeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 6,
+  },
+  col: { alignItems: "center" },
   chev: { paddingVertical: 8 },
-  colon: { fontSize: 36, fontWeight: '800', marginHorizontal: 8, marginTop: -6 },
-  sep: { fontSize: 28, fontWeight: '800', marginHorizontal: 4, marginTop: -2 },
-  presetRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 8,
-    paddingTop: 6,
-    flexWrap: 'wrap',
+  colon: {
+    fontSize: 32,
+    fontWeight: "800",
+    marginHorizontal: 8,
+    marginTop: -6,
   },
-  presetBtn: {
-    flexShrink: 1,
+  sep: { fontSize: 24, fontWeight: "800", marginHorizontal: 4, marginTop: -2 },
+
+  presetRow: { gap: 8, paddingHorizontal: 8, paddingTop: 6 },
+  presetText: { includeFontPadding: false, fontSize: 14, fontWeight: "600" },
+
+  twoColRow: { flexDirection: "row", alignItems: "stretch", gap: 8 },
+  presetBtnEqual: {
+    flex: 1,
     minWidth: 0,
-    paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 14,
-    alignSelf: 'center',
-  },
-  presetText: {
-    includeFontPadding: false,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  chipsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginLeft: 8,
-    flexShrink: 0,
-  },
-  presetChip: {
     paddingHorizontal: 10,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  chipsRow: { flexDirection: "row", alignItems: "center", marginTop: 8 },
+  presetChipEqual: {
+    flex: 1,
+    minWidth: 0,
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 8,
+    marginHorizontal: 4,
     borderRadius: 999,
-    flexShrink: 0,
   },
 });

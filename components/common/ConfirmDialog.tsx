@@ -1,7 +1,6 @@
-// components/common/ConfirmDialog.tsx
-import { useAppTheme } from '@/providers/ThemeProvider';
-import { pluralize } from '@/src/utils/plural';
-import React, { useEffect, useRef, useState } from 'react';
+import { useAppTheme } from "@/providers/ThemeProvider";
+import { pluralize } from "@/src/utils/plural";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Modal,
   Platform,
@@ -10,39 +9,35 @@ import {
   StyleSheet,
   Text,
   View,
-} from 'react-native';
+} from "react-native";
 
-type ConfirmVariant = 'recycle' | 'permanent';
+type ConfirmVariant = "recycle" | "permanent";
 
-const COPY: Record<ConfirmVariant, { actionText: string; confirmLabel: string; cancelLabel: string }> = {
-  recycle:   { actionText: 'will be moved to Recycle Bin', confirmLabel: 'Move to Recycle bin', cancelLabel: 'Cancel' },
-  permanent: { actionText: 'will be permanently deleted',  confirmLabel: 'Delete forever',        cancelLabel: 'Cancel' },
+const COPY: Record<
+  ConfirmVariant,
+  { actionText: string; confirmLabel: string; cancelLabel: string }
+> = {
+  recycle: {
+    actionText: "will be moved to Recycle Bin",
+    confirmLabel: "Move to Recycle bin",
+    cancelLabel: "Cancel",
+  },
+  permanent: {
+    actionText: "will be permanently deleted",
+    confirmLabel: "Delete forever",
+    cancelLabel: "Cancel",
+  },
 };
 
 type Props = {
-  /** Controls visibility */
   visible: boolean;
-
-  /** Count of items affected */
   count: number;
-
-  /** Base singular noun, e.g. 'note' | 'reminder' | 'sticky note' | 'to-do' | 'list' | 'pin' */
   noun: string;
-
-  /** Optional explicit plural form (e.g., 'to-dos', 'sticky notes') */
   explicitPlural?: string;
-
-  /** What kind of confirmation this is */
   variant: ConfirmVariant;
-
-  /** Actions */
   onConfirm: () => void;
   onCancel: () => void;
-
-  /** UX */
   dismissOnBackdrop?: boolean;
-
-  /** Rare overrides (usually don't touch these) */
   actionTextOverride?: string;
   confirmLabelOverride?: string;
   cancelLabelOverride?: string;
@@ -74,13 +69,29 @@ export default function ConfirmDialog({
     if (visible) {
       setMounted(true);
       RNAnimated.parallel([
-        RNAnimated.timing(backdrop, { toValue: 1, duration: 180, useNativeDriver: true }),
-        RNAnimated.timing(translateY, { toValue: 0, duration: 220, useNativeDriver: true }),
+        RNAnimated.timing(backdrop, {
+          toValue: 1,
+          duration: 180,
+          useNativeDriver: true,
+        }),
+        RNAnimated.timing(translateY, {
+          toValue: 0,
+          duration: 220,
+          useNativeDriver: true,
+        }),
       ]).start();
     } else if (mounted) {
       RNAnimated.parallel([
-        RNAnimated.timing(backdrop, { toValue: 0, duration: 160, useNativeDriver: true }),
-        RNAnimated.timing(translateY, { toValue: 40, duration: 180, useNativeDriver: true }),
+        RNAnimated.timing(backdrop, {
+          toValue: 0,
+          duration: 160,
+          useNativeDriver: true,
+        }),
+        RNAnimated.timing(translateY, {
+          toValue: 40,
+          duration: 180,
+          useNativeDriver: true,
+        }),
       ]).start(() => setMounted(false));
     }
   }, [visible]);
@@ -92,7 +103,7 @@ export default function ConfirmDialog({
   const confirmLabel = confirmLabelOverride ?? copy.confirmLabel;
   const cancelLabel = cancelLabelOverride ?? copy.cancelLabel;
 
-  const label = pluralize(noun, count, explicitPlural); // e.g. "note" | "notes"
+  const label = pluralize(noun, count, explicitPlural);
   const message = messageOverride ?? `${count} ${label} ${actionText}`;
 
   return (
@@ -126,14 +137,24 @@ export default function ConfirmDialog({
           <Text style={[styles.sheetMsg, { color: c.text }]}>{message}</Text>
 
           <View style={styles.actionsRow}>
-            <Pressable onPress={onCancel} style={[styles.actionBtn, { backgroundColor: c.card }]}>
-              <Text style={[styles.cancelText, { color: c.text }]}>{cancelLabel}</Text>
+            <Pressable
+              onPress={onCancel}
+              style={[styles.actionBtn, { backgroundColor: c.card }]}
+            >
+              <Text style={[styles.cancelText, { color: c.text }]}>
+                {cancelLabel}
+              </Text>
             </Pressable>
 
             <View style={[styles.divider, { backgroundColor: c.border }]} />
 
-            <Pressable onPress={onConfirm} style={[styles.actionBtn, { backgroundColor: c.card }]}>
-              <Text style={[styles.confirmText, { color: c.accent }]}>{confirmLabel}</Text>
+            <Pressable
+              onPress={onConfirm}
+              style={[styles.actionBtn, { backgroundColor: c.card }]}
+            >
+              <Text style={[styles.confirmText, { color: c.accent }]}>
+                {confirmLabel}
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -144,11 +165,13 @@ export default function ConfirmDialog({
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1 },
-  backdropFill: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)' },
+  backdropFill: { flex: 1, backgroundColor: "rgba(0,0,0,0.35)" },
 
   sheetWrap: {
-    position: 'absolute',
-    left: 0, right: 0, bottom: 0,
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
     padding: 12,
   },
   sheetCard: {
@@ -156,25 +179,25 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     ...Platform.select({
-      ios: { shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 12 },
+      ios: { shadowColor: "#000", shadowOpacity: 0.15, shadowRadius: 12 },
       android: { elevation: 12 },
     }),
   },
   sheetMsg: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 10,
   },
   actionsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     gap: 12,
   },
   actionBtn: {
     flex: 1,
     paddingVertical: 12,
-    alignItems: 'center',
+    alignItems: "center",
     borderRadius: 12,
   },
   divider: {
@@ -183,10 +206,10 @@ const styles = StyleSheet.create({
   },
   cancelText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   confirmText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 });

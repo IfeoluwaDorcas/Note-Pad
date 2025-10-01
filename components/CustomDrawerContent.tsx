@@ -11,36 +11,68 @@ import {
   Bell,
   CheckSquare,
   Notebook,
-  Settings,
+  Palette,
   StickyNote,
   Trash2,
-} from 'lucide-react-native';
-import React, { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+} from "lucide-react-native";
+import React, { useMemo, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-export default function CustomDrawerContent(props: DrawerContentComponentProps) {
+export default function CustomDrawerContent(
+  props: DrawerContentComponentProps
+) {
+  const notes = useNotesStore((s) => s.notes);
+  const stickiesMap = useStickyStore((s) => s.stickies);
+  const todosMap = useTodoStore((s) => s.todos);
+  const reminderMap = useReminderStore((s) => s.reminders);
 
-  const notes = useNotesStore(s => s.notes);
-  const stickiesMap = useStickyStore(s => s.stickies);
-  const todosMap = useTodoStore(s => s.todos);
-  const reminderMap = useReminderStore(s => s.reminders)
-
-  const noteItems      = useMemo(() => notes.filter(n => n.type === 'note'), [notes]);
+  const noteItems = useMemo(
+    () => notes.filter((n) => n.type === "note"),
+    [notes]
+  );
   const stickies = useMemo(() => Object.values(stickiesMap), [stickiesMap]);
-  const todos    = useMemo(() => Object.values(todosMap), [todosMap]);
+  const todos = useMemo(() => Object.values(todosMap), [todosMap]);
   const reminders = useMemo(() => Object.values(reminderMap), [reminderMap]);
 
-  const notesActiveCount     = useMemo(() => noteItems.filter(n => !n.deletedAt).length, [noteItems]);
-  const remindersActiveCount = useMemo(() => reminders.filter(r => !r.deletedAt).length, [reminders]);
-  const stickyActiveCount    = useMemo(() => stickies.filter(s => !s.deletedAt).length, [stickies]);
-  const todoActiveCount      = useMemo(() => todos.filter(t => !t.deletedAt).length, [todos]);
+  const notesActiveCount = useMemo(
+    () => noteItems.filter((n) => !n.deletedAt).length,
+    [noteItems]
+  );
+  const remindersActiveCount = useMemo(
+    () => reminders.filter((r) => !r.deletedAt).length,
+    [reminders]
+  );
+  const stickyActiveCount = useMemo(
+    () => stickies.filter((s) => !s.deletedAt).length,
+    [stickies]
+  );
+  const todoActiveCount = useMemo(
+    () => todos.filter((t) => !t.deletedAt).length,
+    [todos]
+  );
 
-  const deletedNotesCount     = useMemo(() => noteItems.filter(n => n.deletedAt).length, [noteItems]);
-  const deletedRemindersCount = useMemo(() => reminders.filter(r => !!r.deletedAt).length, [reminders]);
-  const deletedStickyCount    = useMemo(() => stickies.filter(s => !!s.deletedAt).length, [stickies]);
-  const deletedTodosCount     = useMemo(() => todos.filter(t => !!t.deletedAt).length, [todos]);
+  const deletedNotesCount = useMemo(
+    () => noteItems.filter((n) => n.deletedAt).length,
+    [noteItems]
+  );
+  const deletedRemindersCount = useMemo(
+    () => reminders.filter((r) => !!r.deletedAt).length,
+    [reminders]
+  );
+  const deletedStickyCount = useMemo(
+    () => stickies.filter((s) => !!s.deletedAt).length,
+    [stickies]
+  );
+  const deletedTodosCount = useMemo(
+    () => todos.filter((t) => !!t.deletedAt).length,
+    [todos]
+  );
 
-  const deletedCount = deletedNotesCount + deletedRemindersCount + deletedStickyCount + deletedTodosCount;
+  const deletedCount =
+    deletedNotesCount +
+    deletedRemindersCount +
+    deletedStickyCount +
+    deletedTodosCount;
 
   const { state, navigation } = props;
   const { theme } = useAppTheme();
@@ -49,10 +81,10 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
   const currentName = state.routeNames[state.index];
   const isFocused = (routeName: string) => currentName === routeName;
   const isAnyBinScreen = [
-    'DeletedNotes',
-    'DeletedReminders',
-    'DeletedStickyNotes',
-    'DeletedTodos',
+    "DeletedNotes",
+    "DeletedReminders",
+    "DeletedStickyNotes",
+    "DeletedTodos",
   ].includes(currentName);
 
   const [recycleOpen, setRecycleOpen] = useState<boolean>(isAnyBinScreen);
@@ -60,46 +92,49 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
   return (
     <DrawerContentScrollView
       {...props}
-      contentContainerStyle={[styles.scroll, { backgroundColor: c.bg, flexGrow: 1 }]}
+      contentContainerStyle={[
+        styles.scroll,
+        { backgroundColor: c.bg, flexGrow: 1 },
+      ]}
     >
       <Row
         label="Notes"
         Icon={Notebook}
         count={notesActiveCount}
-        active={isFocused('Notes')}
+        active={isFocused("Notes")}
         colors={c}
-        onPress={() => navigation.navigate('Notes')}
+        onPress={() => navigation.navigate("Notes")}
       />
       <Row
         label="Reminder"
         Icon={Bell}
         count={remindersActiveCount}
-        active={isFocused('Reminders')}
+        active={isFocused("Reminders")}
         colors={c}
-        onPress={() => navigation.navigate('Reminders')}
+        onPress={() => navigation.navigate("Reminders")}
       />
       <Row
         label="Sticky note"
         Icon={StickyNote}
         count={stickyActiveCount}
-        active={isFocused('StickyNote')}
+        active={isFocused("StickyNote")}
         colors={c}
-        onPress={() => navigation.navigate('StickyNote')}
+        onPress={() => navigation.navigate("StickyNote")}
       />
       <Row
         label="To-do"
         Icon={CheckSquare}
         count={todoActiveCount}
-        active={isFocused('Todo')}
+        active={isFocused("Todo")}
         colors={c}
-        onPress={() => navigation.navigate('Todo')}
+        onPress={() => navigation.navigate("Todo")}
       />
       <Row
-        label="Settings"
-        Icon={Settings}
-        active={isFocused('Settings')}
+        label="Theme"
+        Icon={Palette}
+        active={isFocused("Theme")}
         colors={c}
-        onPress={() => navigation.navigate('Settings')}
+        onPress={() => navigation.navigate("Theme")}
       />
 
       <View style={[styles.divider, { borderColor: c.border }]} />
@@ -110,7 +145,7 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
         count={deletedCount}
         active={isAnyBinScreen && !recycleOpen}
         colors={c}
-        onPress={() => setRecycleOpen(prev => !prev)}
+        onPress={() => setRecycleOpen((prev) => !prev)}
       />
 
       {recycleOpen && (
@@ -119,36 +154,36 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
             label="Notes"
             Icon={Notebook}
             count={deletedNotesCount}
-            active={currentName === 'DeletedNotes'}
+            active={currentName === "DeletedNotes"}
             colors={c}
-            onPress={() => navigation.navigate('DeletedNotes')}
+            onPress={() => navigation.navigate("DeletedNotes")}
             isSub
           />
           <Row
             label="Reminders"
             Icon={Bell}
             count={deletedRemindersCount}
-            active={currentName === 'DeletedReminders'}
+            active={currentName === "DeletedReminders"}
             colors={c}
-            onPress={() => navigation.navigate('DeletedReminders')}
+            onPress={() => navigation.navigate("DeletedReminders")}
             isSub
           />
           <Row
             label="Sticky Notes"
             Icon={StickyNote}
             count={deletedStickyCount}
-            active={currentName === 'DeletedStickyNotes'}
+            active={currentName === "DeletedStickyNotes"}
             colors={c}
-            onPress={() => navigation.navigate('DeletedStickyNotes')}
+            onPress={() => navigation.navigate("DeletedStickyNotes")}
             isSub
           />
           <Row
             label="To-dos"
             Icon={CheckSquare}
             count={deletedTodosCount}
-            active={currentName === 'DeletedTodos'}
+            active={currentName === "DeletedTodos"}
             colors={c}
-            onPress={() => navigation.navigate('DeletedTodos')}
+            onPress={() => navigation.navigate("DeletedTodos")}
             isSub
           />
         </>

@@ -67,7 +67,6 @@ export default function TodoListScreen() {
     return sorted;
   }, [base, searchQuery, sortBy, sortDir]);
 
-  // ✅ useSelection hook here
   const {
     selectionMode,
     selectedIds,
