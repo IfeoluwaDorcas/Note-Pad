@@ -160,8 +160,8 @@ const NumberWheel: React.FC<NumberWheelProps> = ({
 };
 
 export default function CreateReminderDialog({
-  visible,
   mode = "create",
+  visible,
   initial,
   onClose,
   onCreate,

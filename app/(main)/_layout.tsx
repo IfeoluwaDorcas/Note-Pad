@@ -5,6 +5,7 @@ import {
 import CustomDrawerContent from "@/components/CustomDrawerContent";
 import { useAppTheme } from "@/providers/ThemeProvider";
 import { startDueWatcher, stopDueWatcher } from "@/src/utils/dueWatcher";
+import { PortalProvider } from "@gorhom/portal";
 import { Drawer } from "expo-router/drawer";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo } from "react";
@@ -13,7 +14,6 @@ export default function MainLayout() {
   const { theme } = useAppTheme();
   const T = theme.tokens;
 
-  // run effects unconditionally (do NOT early-return around them)
   useEffect(() => {
     (async () => {
       try {
@@ -42,7 +42,7 @@ export default function MainLayout() {
   );
 
   return (
-    <>
+    <PortalProvider>
       <StatusBar
         style={theme.nav.dark ? "light" : "dark"}
         translucent
@@ -83,6 +83,6 @@ export default function MainLayout() {
           }}
         />
       </Drawer>
-    </>
+    </PortalProvider>
   );
 }
