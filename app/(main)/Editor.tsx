@@ -15,6 +15,7 @@ import {
 import React from "react";
 import {
   Platform,
+  ScrollView,
   StyleSheet,
   TextInput,
   TouchableOpacity,
@@ -38,6 +39,12 @@ export default function NoteEditorScreen() {
   const { theme } = useAppTheme();
   const c = theme.tokens.colors;
   const s = theme.nav.colors;
+  const fs = theme.tokens.fontScale;
+  const webviewProps = {
+    showsVerticalScrollIndicator: false,
+    showsHorizontalScrollIndicator: false,
+    overScrollMode: "never" as const,
+  };
 
   const {
     editorRef,
@@ -50,6 +57,7 @@ export default function NoteEditorScreen() {
     hiliteColorOpen,
     setForeColorOpen,
     setHiliteColorOpen,
+    saveSelection,
     onChangeTitle,
     onChangeContent,
     applyForeColor,
@@ -76,28 +84,38 @@ export default function NoteEditorScreen() {
             onChangeText={onChangeTitle}
             placeholder="Title"
             placeholderTextColor={s.notification}
-            style={[styles.titleInput, { color: c.text }]}
+            style={[
+              styles.titleInput,
+              { color: c.text, fontSize: fs(18), lineHeight: fs(28) },
+            ]}
             returnKeyType="next"
             onSubmitEditing={() => editorRef.current?.focusContentEditor()}
           />
         </View>
-
-        <RichEditor
-          key={editorKey}
-          ref={editorRef}
-          useContainer
-          initialContentHTML={content}
-          editorStyle={{
-            backgroundColor: c.bg,
-            color: c.text,
-            placeholderColor: s.notification,
-          }}
-          placeholder="Start typing…"
-          onChange={onChangeContent}
-          style={styles.editor}
-          androidLayerType={Platform.OS === "android" ? "none" : undefined}
-        />
-
+        <View style={styles.editorScroll}>
+          <ScrollView
+            contentContainerStyle={styles.editorScrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <RichEditor
+              key={editorKey}
+              ref={editorRef}
+              useContainer
+              {...(webviewProps as any)}
+              initialContentHTML={content}
+              editorStyle={{
+                backgroundColor: c.bg,
+                color: c.text,
+                placeholderColor: s.notification,
+                contentCSSText: `body{font-size:${fs(16)}px; line-height:1.9;}`,
+              }}
+              placeholder="Start typing…"
+              onChange={onChangeContent}
+              style={styles.editor}
+              androidLayerType={Platform.OS === "android" ? "none" : undefined}
+            />
+          </ScrollView>
+        </View>
         <View style={[styles.toolbarWrap, { borderTopColor: c.border }]}>
           <RichToolbar
             key={toolbarKey}
@@ -120,35 +138,38 @@ export default function NoteEditorScreen() {
             ]}
             iconMap={{
               [actions.insertBulletsList]: ({ tintColor }) => (
-                <List size={16} color={tintColor} />
+                <List size={20} color={tintColor} />
               ),
               [actions.setBold]: ({ tintColor }) => (
-                <Bold size={16} color={tintColor} />
+                <Bold size={20} color={tintColor} />
               ),
               [actions.setItalic]: ({ tintColor }) => (
-                <Italic size={16} color={tintColor} />
+                <Italic size={20} color={tintColor} />
               ),
               [actions.setUnderline]: ({ tintColor }) => (
-                <Underline size={16} color={tintColor} />
+                <Underline size={20} color={tintColor} />
               ),
               [actions.alignLeft]: ({ tintColor }) => (
-                <AlignLeft size={16} color={tintColor} />
+                <AlignLeft size={20} color={tintColor} />
               ),
               [actions.alignCenter]: ({ tintColor }) => (
-                <AlignCenter size={16} color={tintColor} />
+                <AlignCenter size={20} color={tintColor} />
               ),
               [actions.alignRight]: ({ tintColor }) => (
-                <AlignRight size={16} color={tintColor} />
+                <AlignRight size={20} color={tintColor} />
               ),
               [actions.undo]: ({ tintColor }) => (
-                <Undo2 size={16} color={tintColor} />
+                <Undo2 size={20} color={tintColor} />
               ),
               [actions.redo]: ({ tintColor }) => (
-                <Redo2 size={16} color={tintColor} />
+                <Redo2 size={20} color={tintColor} />
               ),
               [FORE_COLOR]: ({ tintColor }) => (
                 <TouchableOpacity
-                  onPress={() => setForeColorOpen(true)}
+                  onPress={() => {
+                    saveSelection();
+                    setForeColorOpen(true);
+                  }}
                   hitSlop={8}
                 >
                   <Palette size={16} color={tintColor} />
@@ -156,7 +177,10 @@ export default function NoteEditorScreen() {
               ),
               [HILITE_COLOR]: ({ tintColor }) => (
                 <TouchableOpacity
-                  onPress={() => setHiliteColorOpen(true)}
+                  onPress={() => {
+                    saveSelection();
+                    setHiliteColorOpen(true);
+                  }}
                   hitSlop={8}
                 >
                   <Highlighter size={16} color={tintColor} />
@@ -166,7 +190,6 @@ export default function NoteEditorScreen() {
             style={[styles.toolbar, { backgroundColor: c.bg }]}
           />
         </View>
-
         <ColorPickerModal
           visible={foreColorOpen}
           onClose={() => setForeColorOpen(false)}
@@ -180,16 +203,6 @@ export default function NoteEditorScreen() {
           onClose={() => setHiliteColorOpen(false)}
           onPick={applyHiliteColor}
           title="Highlight color"
-          swatches={[
-            "#fff59d",
-            "#a7f3d0",
-            "#bfdbfe",
-            "#fde68a",
-            "#fecaca",
-            "#e9d5ff",
-            "#bbf7d0",
-            "#fef3c7",
-          ]}
           themeColors={{ card: c.card, text: c.text, border: c.border }}
         />
       </View>
@@ -203,7 +216,6 @@ const styles = StyleSheet.create({
     height: 54,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   titleInput: {
@@ -218,7 +230,11 @@ const styles = StyleSheet.create({
   },
   headerActions: { flexDirection: "row", gap: 8, marginLeft: 6 },
   iconBtn: { padding: 6, borderRadius: 10 },
-  editor: { flex: 1, paddingHorizontal: 12 },
-  toolbarWrap: { paddingLeft: 5, borderTopWidth: StyleSheet.hairlineWidth },
+  editorScroll: { flex: 1 },
+  editorScrollContent: { flexGrow: 1 },
+  editor: { flex: 1 },
+  toolbarWrap: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
   toolbar: { height: 48 },
 });

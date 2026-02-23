@@ -75,7 +75,7 @@ export default function CustomDrawerContent(
     deletedTodosCount;
 
   const { state, navigation } = props;
-  const { theme } = useAppTheme();
+  const { theme, allThemes } = useAppTheme();
   const c = theme.tokens.colors;
 
   const currentName = state.routeNames[state.index];
@@ -132,6 +132,7 @@ export default function CustomDrawerContent(
       <Row
         label="Theme"
         Icon={Palette}
+        count={allThemes.length}
         active={isFocused("Theme")}
         colors={c}
         onPress={() => navigation.navigate("Theme")}

@@ -1,3 +1,4 @@
+import { Portal } from '@gorhom/portal';
 import { useAppTheme } from '@/providers/ThemeProvider';
 import { RotateCcw, Trash2, X } from 'lucide-react-native';
 import React from 'react';
@@ -20,16 +21,17 @@ export default function RecycleSelectionBar({
   const T = theme.tokens;
 
   return (
-    <View
-      style={[
-        s.wrap,
-        {
-          backgroundColor: T.colors.card,
-          borderColor: T.colors.border,
-        },
-      ]}
-    >
-      <Text style={[s.count, { color: T.colors.text }]}>{count} selected</Text>
+    <Portal>
+      <View
+        style={[
+          s.wrap,
+          {
+            backgroundColor: T.colors.card,
+            borderColor: T.colors.border,
+          },
+        ]}
+      >
+        <Text style={[s.count, { color: T.colors.text }]}>{count} selected</Text>
 
       <Pressable onPress={onRestore} style={s.btn} accessibilityLabel="Restore">
         <RotateCcw size={22} color={T.colors.text} />
@@ -48,7 +50,8 @@ export default function RecycleSelectionBar({
       >
         <X size={22} color={T.colors.text} />
       </Pressable>
-    </View>
+      </View>
+    </Portal>
   );
 }
 
@@ -60,8 +63,9 @@ const s = StyleSheet.create({
     bottom: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    justifyContent: 'space-evenly',
+    paddingHorizontal: 0,
+    paddingVertical: 16,
     borderTopWidth: 1,
     gap: 12,
   },

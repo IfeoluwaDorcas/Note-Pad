@@ -1,5 +1,5 @@
-import type { Theme as NavTheme } from '@react-navigation/native';
-import { Platform } from 'react-native';
+import type { Theme as NavTheme } from "@react-navigation/native";
+import { Dimensions, PixelRatio, Platform } from "react-native";
 
 type Tokens = {
   colors: {
@@ -17,6 +17,7 @@ type Tokens = {
     heading: string;
     body: string;
   };
+  fontScale: (size: number) => number;
   radius: number;
   spacing: (n: number) => number;
 };
@@ -27,22 +28,35 @@ export type AppTheme = {
   nav: NavTheme;
 };
 
+const { width, height } = Dimensions.get("window");
+const SHORT_SIDE = Math.min(width, height);
+const BASE_WIDTH = 375;
+const MIN_SCALE = 0.95;
+const MAX_SCALE = 1.25;
+const SCALE = Math.min(MAX_SCALE, Math.max(MIN_SCALE, SHORT_SIDE / BASE_WIDTH));
+
+export const scaleFont = (size: number) => {
+  const scaled = size * SCALE;
+  return Math.round(PixelRatio.roundToNearestPixel(scaled));
+};
+
 const baseTokens = {
   fonts: {
-    brand: 'GreatVibes_400Regular',
-    heading: 'PlayfairDisplay_700Bold',
-    body: 'Inter_400Regular',
+    brand: "GreatVibes_400Regular",
+    heading: "PlayfairDisplay_700Bold",
+    body: "Inter_400Regular",
   },
+  fontScale: scaleFont,
   radius: 16,
   spacing: (n: number) => n * 4,
 };
 
-const navFonts: NavTheme['fonts'] = Platform.select({
+const navFonts: NavTheme["fonts"] = Platform.select({
   default: {
-    regular: { fontFamily: 'Inter_400Regular', fontWeight: '400' },
-    medium: { fontFamily: 'Inter_500Medium', fontWeight: '500' },
-    bold: { fontFamily: 'Inter_600SemiBold', fontWeight: '600' },
-    heavy: { fontFamily: 'Inter_700Bold', fontWeight: '700' },
+    regular: { fontFamily: "Inter_400Regular", fontWeight: "400" },
+    medium: { fontFamily: "Inter_500Medium", fontWeight: "500" },
+    bold: { fontFamily: "Inter_600SemiBold", fontWeight: "600" },
+    heavy: { fontFamily: "Inter_700Bold", fontWeight: "700" },
   },
 });
 
@@ -103,34 +117,34 @@ export const allThemes: AppTheme[] = [
       fonts: navFonts,
     },
   },
-  {
-    name: "Moss Depth",
-    tokens: {
-      colors: {
-        bg: "#0f2a1d",
-        card: "#375534",
-        text: "#e3eed4",
-        textMuted: "#a3b9a2",
-        accent: "#6b9071",
-        accentMuted: "#aec380",
-        border: "#738f6e",
-        placeholder: "#a3bfa2",
-      },
-      ...baseTokens,
-    },
-    nav: {
-      dark: true,
-      colors: {
-        primary: "#6b9071",
-        background: "#0f2a1d",
-        card: "#375534",
-        text: "#e3eed4",
-        border: "#738f6e",
-        notification: "#aec380",
-      },
-      fonts: navFonts,
-    },
-  },
+  // {
+  //   name: "Moss Depth",
+  //   tokens: {
+  //     colors: {
+  //       bg: "#0f2a1d",
+  //       card: "#375534",
+  //       text: "#e3eed4",
+  //       textMuted: "#a3b9a2",
+  //       accent: "#6b9071",
+  //       accentMuted: "#aec380",
+  //       border: "#738f6e",
+  //       placeholder: "#a3bfa2",
+  //     },
+  //     ...baseTokens,
+  //   },
+  //   nav: {
+  //     dark: true,
+  //     colors: {
+  //       primary: "#6b9071",
+  //       background: "#0f2a1d",
+  //       card: "#375534",
+  //       text: "#e3eed4",
+  //       border: "#738f6e",
+  //       notification: "#aec380",
+  //     },
+  //     fonts: navFonts,
+  //   },
+  // },
   {
     name: "Midnight Fjord",
     tokens: {
@@ -159,34 +173,34 @@ export const allThemes: AppTheme[] = [
       fonts: navFonts,
     },
   },
-  {
-    name: "Sunbeam Yellow",
-    tokens: {
-      colors: {
-        bg: "#fffbe6",
-        card: "#fff0b3",
-        text: "#3e3e00",
-        textMuted: "#bfae6b",
-        accent: "#fcd34d",
-        accentMuted: "#ffeaa7",
-        border: "#e2c044",
-        placeholder: "#cabf84",
-      },
-      ...baseTokens,
-    },
-    nav: {
-      dark: false,
-      colors: {
-        primary: "#fcd34d",
-        background: "#fffbe6",
-        card: "#fff0b3",
-        text: "#3e3e00",
-        border: "#e2c044",
-        notification: "#ffeaa7",
-      },
-      fonts: navFonts,
-    },
-  },
+  // {
+  //   name: "Sunbeam Yellow",
+  //   tokens: {
+  //     colors: {
+  //       bg: "#fffbe6",
+  //       card: "#fff0b3",
+  //       text: "#3e3e00",
+  //       textMuted: "#bfae6b",
+  //       accent: "#fcd34d",
+  //       accentMuted: "#ffeaa7",
+  //       border: "#e2c044",
+  //       placeholder: "#cabf84",
+  //     },
+  //     ...baseTokens,
+  //   },
+  //   nav: {
+  //     dark: false,
+  //     colors: {
+  //       primary: "#fcd34d",
+  //       background: "#fffbe6",
+  //       card: "#fff0b3",
+  //       text: "#3e3e00",
+  //       border: "#e2c044",
+  //       notification: "#ffeaa7",
+  //     },
+  //     fonts: navFonts,
+  //   },
+  // },
   {
     name: "Velvet Purple",
     tokens: {
@@ -215,62 +229,62 @@ export const allThemes: AppTheme[] = [
       fonts: navFonts,
     },
   },
-  {
-    name: "Clean White",
-    tokens: {
-      colors: {
-        bg: "#ffffff",
-        card: "#f4f4f4",
-        text: "#1a1a1a",
-        textMuted: "#888888",
-        accent: "#d1d5db",
-        accentMuted: "#e5e7eb",
-        border: "#cccccc",
-        placeholder: "#aaaaaa",
-      },
-      ...baseTokens,
-    },
-    nav: {
-      dark: false,
-      colors: {
-        primary: "#d1d5db",
-        background: "#ffffff",
-        card: "#f4f4f4",
-        text: "#1a1a1a",
-        border: "#cccccc",
-        notification: "#e5e7eb",
-      },
-      fonts: navFonts,
-    },
-  },
-  {
-    name: "Mocha Brown",
-    tokens: {
-      colors: {
-        bg: "#f6f0e8",
-        card: "#c9a17d",
-        text: "#3b2f2f",
-        textMuted: "#947b64",
-        accent: "#a9746e",
-        accentMuted: "#b59a85",
-        border: "#826e5d",
-        placeholder: "#a38a77",
-      },
-      ...baseTokens,
-    },
-    nav: {
-      dark: false,
-      colors: {
-        primary: "#a9746e",
-        background: "#f6f0e8",
-        card: "#c9a17d",
-        text: "#3b2f2f",
-        border: "#826e5d",
-        notification: "#b59a85",
-      },
-      fonts: navFonts,
-    },
-  },
+  // {
+  //   name: "Clean White",
+  //   tokens: {
+  //     colors: {
+  //       bg: "#ffffff",
+  //       card: "#f4f4f4",
+  //       text: "#1a1a1a",
+  //       textMuted: "#888888",
+  //       accent: "#d1d5db",
+  //       accentMuted: "#e5e7eb",
+  //       border: "#cccccc",
+  //       placeholder: "#aaaaaa",
+  //     },
+  //     ...baseTokens,
+  //   },
+  //   nav: {
+  //     dark: false,
+  //     colors: {
+  //       primary: "#d1d5db",
+  //       background: "#ffffff",
+  //       card: "#f4f4f4",
+  //       text: "#1a1a1a",
+  //       border: "#cccccc",
+  //       notification: "#e5e7eb",
+  //     },
+  //     fonts: navFonts,
+  //   },
+  // },
+  // {
+  //   name: "Mocha Brown",
+  //   tokens: {
+  //     colors: {
+  //       bg: "#f6f0e8",
+  //       card: "#c9a17d",
+  //       text: "#3b2f2f",
+  //       textMuted: "#947b64",
+  //       accent: "#a9746e",
+  //       accentMuted: "#b59a85",
+  //       border: "#826e5d",
+  //       placeholder: "#a38a77",
+  //     },
+  //     ...baseTokens,
+  //   },
+  //   nav: {
+  //     dark: false,
+  //     colors: {
+  //       primary: "#a9746e",
+  //       background: "#f6f0e8",
+  //       card: "#c9a17d",
+  //       text: "#3b2f2f",
+  //       border: "#826e5d",
+  //       notification: "#b59a85",
+  //     },
+  //     fonts: navFonts,
+  //   },
+  // },
   {
     name: "Deep Teal",
     tokens: {

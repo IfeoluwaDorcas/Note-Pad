@@ -184,8 +184,9 @@ const s = StyleSheet.create({
     elevation: 12,
   },
   row: {
-    minHeight: 35,
-    paddingHorizontal: 14,
+    minHeight: 38,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     alignItems: "center",
     flexDirection: "row",
     gap: 12,

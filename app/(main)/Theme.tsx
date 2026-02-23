@@ -1,62 +1,75 @@
 import { useAppTheme } from "@/providers/ThemeProvider";
-import React from "react";
+import { useNavigation } from "@react-navigation/native";
+import React, { useLayoutEffect } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
+import NotesToolbar from "@/components/notes/NotesToolbar";
+import Screen from "@/components/Screen";
+
 export default function ThemeScreen() {
+  const navigation = useNavigation();
+  useLayoutEffect(() => {
+    navigation.setOptions?.({ headerShown: false });
+  }, [navigation]);
+
   const { theme, setTheme, allThemes } = useAppTheme();
   const c = theme.tokens.colors;
+  const HEADER_TOP_OFFSET = 50;
 
   return (
-    <View style={[styles.container, { backgroundColor: c.bg }]}>
-      <FlatList
-        data={allThemes}
-        keyExtractor={(item) => item.name}
-        contentContainerStyle={{ padding: 12 }}
-        renderItem={({ item }) => {
-          const isActive = item.name === theme.name;
-          return (
-            <Pressable
-              onPress={() => setTheme(item)}
-              style={[
-                styles.item,
-                { backgroundColor: c.card },
-                isActive && {
-                  borderColor: item.tokens.colors.accent,
-                  borderWidth: 2,
-                },
-              ]}
-            >
-              <View
+    <Screen>
+      <View style={{ flex: 1, paddingHorizontal: 12 }}>
+        <View style={{ paddingTop: HEADER_TOP_OFFSET }}>
+          <NotesToolbar
+            variant="full"
+            title="Theme"
+            noun="theme"
+            total={allThemes.length}
+            showSearch={false}
+            showMenu={false}
+            showFilters={false}
+          />
+        </View>
+        <FlatList
+          data={allThemes}
+          keyExtractor={(item) => item.name}
+          contentContainerStyle={{ paddingVertical: 12 }}
+          renderItem={({ item }) => {
+            const isActive = item.name === theme.name;
+            return (
+              <Pressable
+                onPress={() => setTheme(item)}
                 style={[
-                  styles.colorPreview,
-                  { backgroundColor: item.tokens.colors.accent },
+                  styles.item,
+                  { backgroundColor: c.card },
+                  isActive && {
+                    borderColor: item.tokens.colors.accent,
+                    borderWidth: 2,
+                  },
                 ]}
-              />
-              <Text
-                style={[styles.itemText, { color: c.text }]}
               >
-                {item.name}
-              </Text>
-              {isActive && (
-                <Text style={[styles.activeText, { color: c.accent }]}>✓</Text>
-              )}
-            </Pressable>
-          );
-        }}
-      />
-    </View>
+                <View
+                  style={[
+                    styles.colorPreview,
+                    { backgroundColor: item.tokens.colors.accent },
+                  ]}
+                />
+                <Text style={[styles.itemText, { color: c.text }]}>
+                  {item.name}
+                </Text>
+                {isActive && (
+                  <Text style={[styles.activeText, { color: c.accent }]}>✓</Text>
+                )}
+              </Pressable>
+            );
+          }}
+        />
+      </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, marginTop: 18 },
-  header: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginTop: 16,
-    marginBottom: 8,
-    textAlign: "center",
-  },
   item: {
     flexDirection: "row",
     alignItems: "center",

@@ -1,4 +1,4 @@
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import React, { useCallback, useLayoutEffect, useMemo, useState } from "react";
 import { useSharedValue } from "react-native-reanimated";
 
@@ -76,6 +76,21 @@ export default function TodoListScreen() {
     toggleSelectAll,
     allSelected,
   } = useSelection(data.map((t) => t.id));
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => exitSelection();
+    }, [exitSelection])
+  );
+
+  useLayoutEffect(() => {
+    const sub = navigation.addListener("beforeRemove", (e) => {
+      if (!selectionMode) return;
+      e.preventDefault();
+      exitSelection();
+    });
+    return sub;
+  }, [navigation, selectionMode, exitSelection]);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -221,6 +236,7 @@ export default function TodoListScreen() {
 
       <FAB onPress={() => setCreateOpen(true)} />
 
+      {/*
       <UndoSnackbar
         visible={snackOpen}
         message={
@@ -237,6 +253,7 @@ export default function TodoListScreen() {
           setUndoIds([]);
         }}
       />
+      */}
     </Screen>
   );
 }

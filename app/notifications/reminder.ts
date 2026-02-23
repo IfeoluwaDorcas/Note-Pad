@@ -1,10 +1,15 @@
 import type { ReminderPayload } from '@/components/reminder/CreateReminderDialog';
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
 export async function scheduleReminderNotification(
   p: ReminderPayload,
   rid?: string
 ) {
+  if (Platform.OS === 'android' && Constants.appOwnership === 'expo') {
+    return { id: undefined, scheduledFor: new Date() };
+  }
   const when = new Date(p.remindAt);
   const nowMs = Date.now();
   const minFire = nowMs + 5_000;

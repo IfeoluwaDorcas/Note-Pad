@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 Notifications.setNotificationHandler({
@@ -12,6 +13,7 @@ Notifications.setNotificationHandler({
 });
 
 export async function ensurePermissions() {
+  if (Platform.OS === 'android' && Constants.appOwnership === 'expo') return;
   const settings = await Notifications.getPermissionsAsync();
   if (settings.status !== 'granted') {
     const req = await Notifications.requestPermissionsAsync();
@@ -21,6 +23,7 @@ export async function ensurePermissions() {
 
 export async function ensureAndroidChannel(accentColor: string) {
   if (Platform.OS !== 'android') return;
+  if (Constants.appOwnership === 'expo') return;
   await Notifications.setNotificationChannelAsync('reminders', {
     name: 'Reminders',
     importance: Notifications.AndroidImportance.HIGH,

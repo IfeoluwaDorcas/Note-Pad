@@ -63,7 +63,7 @@ export default function ConfirmDialog({
 
   const [mounted, setMounted] = useState(visible);
   const backdrop = useRef(new RNAnimated.Value(0)).current;
-  const translateY = useRef(new RNAnimated.Value(40)).current;
+  const translateY = useRef(new RNAnimated.Value(60)).current;
 
   useEffect(() => {
     if (visible) {
@@ -88,7 +88,7 @@ export default function ConfirmDialog({
           useNativeDriver: true,
         }),
         RNAnimated.timing(translateY, {
-          toValue: 40,
+          toValue: 60,
           duration: 180,
           useNativeDriver: true,
         }),
@@ -172,21 +172,23 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    padding: 12,
+    paddingHorizontal: 25,
+    paddingBottom: 28,
   },
   sheetCard: {
     borderRadius: 20,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
     ...Platform.select({
       ios: { shadowColor: "#000", shadowOpacity: 0.15, shadowRadius: 12 },
       android: { elevation: 12 },
     }),
   },
   sheetMsg: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: "600",
-    marginBottom: 10,
+    marginBottom: 12,
+    lineHeight: 20,
   },
   actionsRow: {
     flexDirection: "row",

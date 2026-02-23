@@ -168,8 +168,33 @@ export function useNoteEditor({ defaultTextColor }: UseNoteEditorOptions) {
     return () => sub.remove();
   }, [flushSave]);
 
+  const saveSelection = useCallback(() => {
+    editorRef.current?.commandDOM(`
+      (function(){
+        try{
+          var sel = window.getSelection();
+          if (!sel || sel.rangeCount === 0) return true;
+          window.__savedRange = sel.getRangeAt(0).cloneRange();
+        }catch(e){}
+        return true;
+      })();
+      true;`);
+  }, []);
+
   const restoreSelection = useCallback(() => {
     editorRef.current?.focusContentEditor();
+    editorRef.current?.commandDOM(`
+      (function(){
+        try{
+          if (!window.__savedRange) return true;
+          var sel = window.getSelection();
+          if (!sel) return true;
+          sel.removeAllRanges();
+          sel.addRange(window.__savedRange);
+        }catch(e){}
+        return true;
+      })();
+      true;`);
   }, []);
 
   const injectEditorCSS = useCallback(() => {
@@ -180,6 +205,9 @@ export function useNoteEditor({ defaultTextColor }: UseNoteEditorOptions) {
       p { margin: 0; }
       p + p { margin-top: 8px; }
       span[style*="background-color"] { line-height: 1.4; }
+      /* hide scrollbars but keep scrolling */
+      * { scrollbar-width: none; -ms-overflow-style: none; }
+      *::-webkit-scrollbar { width: 0; height: 0; }
     `;
     const js = `
       (function(){
@@ -222,6 +250,7 @@ export function useNoteEditor({ defaultTextColor }: UseNoteEditorOptions) {
 
   const onChangeTitle = useCallback(
     (t: string) => {
+      if (t === latestTitle.current) return;
       latestTitle.current = t;
       setTitle(t);
       scheduleUpdate({ title: t });
@@ -231,6 +260,7 @@ export function useNoteEditor({ defaultTextColor }: UseNoteEditorOptions) {
 
   const onChangeContent = useCallback(
     (html: string) => {
+      if (html === latestContent.current) return;
       latestContent.current = html;
       setContent(html);
       scheduleUpdate({ content: html });
@@ -320,6 +350,7 @@ export function useNoteEditor({ defaultTextColor }: UseNoteEditorOptions) {
     applyHiliteColor,
     injectEditorCSS,
     normalizeDoc,
+    saveSelection,
     flushSave,
     flushAndGoBack,
   };

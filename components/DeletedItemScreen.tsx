@@ -1,9 +1,9 @@
-import { useNavigation } from "@react-navigation/native";
-import React, { useLayoutEffect } from "react";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import React, { useCallback, useLayoutEffect } from "react";
 import { Text, View } from "react-native";
 
 import ConfirmDialog from "@/components/common/ConfirmDialog";
-import UndoSnackbar from "@/components/feedback/UndoSnackbar";
+// import UndoSnackbar from "@/components/feedback/UndoSnackbar";
 import NotesList from "@/components/notes/NoteList";
 import NotesToolbar from "@/components/notes/NotesToolbar";
 import RecycleSelectionBar from "@/components/notes/RecycleSelectionBar";
@@ -20,8 +20,14 @@ const TOOLBAR_HEIGHT = 56;
 function BinInfoLine() {
   const { theme } = useAppTheme();
   return (
-    <View style={{ paddingHorizontal: 12, paddingBottom: 10 }}>
-      <Text style={{ fontSize: 14, color: theme.tokens.colors.textMuted }}>
+    <View style={{ paddingBottom: 10 }}>
+      <Text
+        style={{
+          fontSize: 12,
+          fontWeight: "500",
+          color: theme.tokens.colors.textMuted,
+        }}
+      >
         Items show the days left until they’re deleted forever.
       </Text>
     </View>
@@ -53,8 +59,8 @@ export default function DeletedItemScreen({
     selectionMode,
     selectedIds,
     allSelected,
-    undoIds,
-    snackOpen,
+    // undoIds,
+    // snackOpen,
     confirmOpen,
     pendingIds,
     handlePressNote,
@@ -69,25 +75,40 @@ export default function DeletedItemScreen({
     cancelDelete,
     performRestoreSelected,
     handleEmptyBin,
-    setUndoIds,
-    setSnackOpen,
+    // setUndoIds,
+    // setSnackOpen,
   } = useRecycleScreen(type);
 
-  const restoredMsg =
-    undoIds.length <= 1
-      ? `${label.charAt(0).toUpperCase() + label.slice(1)} restored`
-      : `${undoIds.length} ${pluralize(
-          label,
-          undoIds.length,
-          pluralLabel
-        )} restored`;
+  useFocusEffect(
+    useCallback(() => {
+      return () => exitSelection();
+    }, [exitSelection]),
+  );
+
+  useLayoutEffect(() => {
+    const sub = navigation.addListener("beforeRemove", (e) => {
+      if (!selectionMode) return;
+      e.preventDefault();
+      exitSelection();
+    });
+    return sub;
+  }, [navigation, selectionMode, exitSelection]);
+
+  // const restoredMsg =
+  //   undoIds.length <= 1
+  //     ? `${label.charAt(0).toUpperCase() + label.slice(1)} restored`
+  //     : `${undoIds.length} ${pluralize(
+  //         label,
+  //         undoIds.length,
+  //         pluralLabel,
+  //       )} restored`;
 
   const confirmMessageOverride =
     pendingIds.length > 0
       ? `${pendingIds.length} ${pluralize(
           label,
           pendingIds.length,
-          pluralLabel
+          pluralLabel,
         )} will be permanently deleted`
       : undefined;
 
@@ -249,6 +270,7 @@ export default function DeletedItemScreen({
         messageOverride={confirmMessageOverride}
       />
 
+      {/*
       <UndoSnackbar
         visible={snackOpen}
         message={restoredMsg}
@@ -261,6 +283,7 @@ export default function DeletedItemScreen({
           setUndoIds([]);
         }}
       />
+      */}
     </Screen>
   );
 }

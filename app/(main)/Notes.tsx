@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import { useSharedValue } from "react-native-reanimated";
@@ -25,6 +25,7 @@ export default function Notes() {
   useLayoutEffect(() => {
     navigation.setOptions?.({ headerShown: false });
   }, [navigation]);
+
 
   const scrollY = useSharedValue(0);
 
@@ -55,6 +56,21 @@ export default function Notes() {
     setSelectionMode(false);
     setSelectedIds(new Set());
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => exitSelection();
+    }, [exitSelection])
+  );
+
+  useLayoutEffect(() => {
+    const sub = navigation.addListener("beforeRemove", (e) => {
+      if (!selectionMode) return;
+      e.preventDefault();
+      exitSelection();
+    });
+    return sub;
+  }, [navigation, selectionMode, exitSelection]);
 
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds((prev) => {
@@ -194,6 +210,7 @@ export default function Notes() {
         testID="fab-new-note"
       />
 
+      {/*
       <UndoSnackbar
         visible={snackOpen}
         message={
@@ -210,6 +227,7 @@ export default function Notes() {
           setUndoIds([]);
         }}
       />
+      */}
     </Screen>
   );
 }

@@ -120,7 +120,7 @@ export function useNotesToolbar({ scrollY, mode = "default" }: Params) {
 
   const stickyFadeStyle = useAnimatedStyle(() => {
     const y = scrollY?.value ?? 0;
-    const p = interpolate(y, [0, ENTER + 10], [0, 1], Extrapolation.CLAMP);
+    const p = interpolate(y, [ENTER, ENTER + 10], [0, 1], Extrapolation.CLAMP);
     return { opacity: p, transform: [{ translateY: -10 * (1 - p) }] };
   }, [scrollY]);
 

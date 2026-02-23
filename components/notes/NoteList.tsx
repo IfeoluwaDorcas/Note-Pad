@@ -1,13 +1,17 @@
-import { Note, ViewMode } from '@/src/types/note';
-import { formatShortDate } from '@/src/utils/dates';
-import { columnsFor } from '@/src/utils/notes';
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import Animated, { SharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
-import NoteCard from './NoteCard';
+// NotesList.tsx
+import { Note, ViewMode } from "@/src/types/note";
+import { formatShortDate } from "@/src/utils/dates";
+import { columnsFor } from "@/src/utils/notes";
+import React from "react";
+import { View } from "react-native";
+import Animated, {
+  SharedValue,
+  useAnimatedScrollHandler,
+} from "react-native-reanimated";
+import NoteCard from "./NoteCard";
 
 type Props = {
-  data: Note[] & Array<any>;
+  data: Note[] & any[];
   view: ViewMode;
   scrollY?: SharedValue<number>;
   header?: React.ReactElement;
@@ -21,8 +25,10 @@ type Props = {
 
   contentTopInset?: number;
 
-  mode?: 'default' | 'recycle';
+  mode?: "default" | "recycle";
 };
+
+const SPACING = 12;
 
 export default function NotesList({
   data,
@@ -35,10 +41,10 @@ export default function NotesList({
   selectedIds,
   onToggleSelectNote,
   contentTopInset = 0,
-  mode = 'default',
+  mode = "default",
 }: Props) {
   const cols = columnsFor(view);
-  const isRow = view === 'simpleList';
+  const isRow = view === "simpleList";
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (e) => {
@@ -47,15 +53,29 @@ export default function NotesList({
   });
 
   const renderItem = React.useCallback(
-    ({ item }: { item: Note & { __daysLeft?: number } }) => {
+    ({
+      item,
+      index,
+    }: {
+      item: Note & { __daysLeft?: number };
+      index: number;
+    }) => {
       const selected = selectedIds?.has(item.id) ?? false;
       const dateLabel = formatShortDate(item.updatedAt || item.createdAt);
       const daysLeft = item.__daysLeft;
 
+      const isLastInRow = (index + 1) % cols === 0;
+
       return (
-        <View style={[styles.cell, { flex: 1 / cols }]}>
+        <View
+          style={{
+            flex: 1 / cols,
+            marginBottom: SPACING,
+            marginRight: isLastInRow ? 0 : SPACING,
+          }}
+        >
           <NoteCard
-            layout={isRow ? 'row' : 'card'}
+            layout={isRow ? "row" : "card"}
             title={item.title}
             subtitle={dateLabel}
             previewImage={item.previewImage}
@@ -65,36 +85,48 @@ export default function NotesList({
             onLongPress={() => onLongPressNote?.(item.id)}
             onPress={() => onPressNote?.(item.id)}
             mode={mode}
-            daysLeft={mode === 'recycle' ? daysLeft : undefined}
+            daysLeft={mode === "recycle" ? daysLeft : undefined}
           />
         </View>
       );
     },
-    [cols, isRow, onLongPressNote, onPressNote, onToggleSelectNote, selectedIds, selectionMode, mode]
+    [
+      cols,
+      isRow,
+      onLongPressNote,
+      onPressNote,
+      onToggleSelectNote,
+      selectedIds,
+      selectionMode,
+      mode,
+    ],
   );
 
   const keyExtractor = React.useCallback((n: Note) => n.id, []);
 
   return (
-    <Animated.FlatList
-      data={data}
-      key={cols}
-      numColumns={cols}
-      keyExtractor={keyExtractor}
-      contentContainerStyle={[styles.grid, { paddingTop: contentTopInset }]}
-      ListHeaderComponent={header}
-      renderItem={renderItem}
-      onScroll={onScroll}
-      scrollEventThrottle={16}
-      removeClippedSubviews
-      initialNumToRender={12}
-      windowSize={7}
-      ItemSeparatorComponent={isRow ? (() => <View style={{ height: 6 }} />) : undefined}
-    />
+    <View style={{ flex: 1, paddingHorizontal: 10 }}>
+      <Animated.FlatList
+        data={data}
+        key={cols}
+        numColumns={cols}
+        keyExtractor={keyExtractor}
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingTop: contentTopInset,
+        }}
+        ListHeaderComponent={header}
+        renderItem={renderItem}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        removeClippedSubviews
+        initialNumToRender={12}
+        windowSize={7}
+        ItemSeparatorComponent={
+          isRow ? () => <View style={{ height: 6 }} /> : undefined
+        }
+      />
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  grid: { padding: 12, gap: 12 },
-  cell: { padding: 6 },
-});

@@ -29,6 +29,7 @@ import {
   UIManager,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { SharedValue } from "react-native-reanimated";
 import Animated from "react-native-reanimated";
 
@@ -57,6 +58,9 @@ type Props = {
   controller?: NotesToolbarController;
   enableViewMenu?: boolean;
   searchPlaceholder?: string;
+  showSearch?: boolean;
+  showMenu?: boolean;
+  showFilters?: boolean;
 };
 
 export default function NotesToolbar(props: Props) {
@@ -75,16 +79,25 @@ export default function NotesToolbar(props: Props) {
     controller,
     enableViewMenu = true,
     searchPlaceholder = "Search notes",
+    showSearch = true,
+    showMenu = true,
+    showFilters = true,
   } = props;
 
   const nav = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const { theme } = useAppTheme();
   const T = theme.tokens;
-  const t = controller ?? useNotesToolbar({ scrollY, mode });
+  const localController = useNotesToolbar({ scrollY, mode });
+  const t = controller ?? localController;
 
-  const MoreMenus = (
+  const MoreMenus = showMenu ? (
     <>
-      <View ref={t.moreAnchorRef} collapsable={false}>
+      <View
+        ref={t.moreAnchorRef}
+        collapsable={false}
+        style={styles.edgeAlignFixRight}
+      >
         {!selectionMode && (
           <IconBtn onPress={() => t.setMoreOpen(true)}>
             <MoreVertical size={20} color={T.colors.text} />
@@ -163,7 +176,7 @@ export default function NotesToolbar(props: Props) {
         />
       )}
     </>
-  );
+  ) : null;
 
   if (variant === "sticky") {
     return (
@@ -171,7 +184,7 @@ export default function NotesToolbar(props: Props) {
         style={[
           styles.stickyWrap,
           t.stickyFadeStyle,
-          { backgroundColor: T.colors.bg },
+          { backgroundColor: T.colors.bg, top: insets.top },
         ]}
         pointerEvents={
           t.searchOpen ? "auto" : t.compactVisible ? "auto" : "none"
@@ -200,7 +213,7 @@ export default function NotesToolbar(props: Props) {
           )}
 
           <View style={styles.stickyCenter}>
-            {!t.searchOpen && (
+            {(!showSearch || !t.searchOpen) && (
               <Text
                 numberOfLines={1}
                 style={[styles.stickyTitleLeft, { color: T.colors.text }]}
@@ -209,54 +222,59 @@ export default function NotesToolbar(props: Props) {
               </Text>
             )}
 
-            <RNSimpleAnimated.View
-              pointerEvents={t.searchOpen ? "auto" : "none"}
-              style={[
-                styles.stickySearchBarInline,
-                {
-                  opacity: t.stickyProg,
-                  transform: [{ scaleX: t.stickyProg }],
-                  backgroundColor: T.colors.card,
-                },
-              ]}
-            >
-              <TextInput
-                value={t.query}
-                onChangeText={t.setQuery}
-                placeholder={searchPlaceholder}
-                placeholderTextColor={T.colors.placeholder}
-                autoFocus={t.searchOpen}
+            {showSearch && (
+              <RNSimpleAnimated.View
+                pointerEvents={t.searchOpen ? "auto" : "none"}
                 style={[
-                  styles.searchInput,
-                  webNoOutline,
-                  { color: T.colors.text },
+                  styles.stickySearchBarInline,
+                  {
+                    opacity: t.stickyProg,
+                    transform: [{ scaleX: t.stickyProg }],
+                    backgroundColor: T.colors.card,
+                  },
                 ]}
-                returnKeyType="search"
-                underlineColorAndroid="transparent"
-                selectionColor={T.colors.text}
-              />
-            </RNSimpleAnimated.View>
+              >
+                <TextInput
+                  value={t.query}
+                  onChangeText={t.setQuery}
+                  placeholder={searchPlaceholder}
+                  placeholderTextColor={T.colors.placeholder}
+                  autoFocus={t.searchOpen}
+                  style={[
+                    styles.searchInput,
+                    webNoOutline,
+                    { color: T.colors.text },
+                  ]}
+                  returnKeyType="search"
+                  underlineColorAndroid="transparent"
+                  selectionColor={T.colors.text}
+                />
+              </RNSimpleAnimated.View>
+            )}
           </View>
 
-          <View style={styles.rightCluster}>
-            {!t.searchOpen ? (
-              <IconBtn onPress={t.openSearch}>
-                <Search size={20} color={T.colors.text} />
-              </IconBtn>
-            ) : (
-              <IconBtn onPress={t.closeSearch}>
-                <X size={18} color={T.colors.text} />
-              </IconBtn>
-            )}
-            {MoreMenus}
-          </View>
+          {(showSearch || showMenu) && (
+            <View style={styles.rightCluster}>
+              {showSearch &&
+                (!t.searchOpen ? (
+                  <IconBtn onPress={t.openSearch}>
+                    <Search size={20} color={T.colors.text} />
+                  </IconBtn>
+                ) : (
+                  <IconBtn onPress={t.closeSearch}>
+                    <X size={18} color={T.colors.text} />
+                  </IconBtn>
+                ))}
+              {MoreMenus}
+            </View>
+          )}
         </View>
       </Animated.View>
     );
   }
 
   return (
-    <>
+    <View>
       <Animated.View style={[styles.fullWrap, t.fullFadeStyle]}>
         <View style={styles.center}>
           <HeaderTitle
@@ -274,7 +292,7 @@ export default function NotesToolbar(props: Props) {
           {selectionMode ? (
             <Pressable
               onPress={onToggleSelectAll}
-              style={styles.allToggle}
+              style={[styles.allToggle, styles.edgeAlignFixLeft]}
               hitSlop={8}
             >
               {allSelected ? (
@@ -287,55 +305,64 @@ export default function NotesToolbar(props: Props) {
               </Text>
             </Pressable>
           ) : (
-            <IconBtn onPress={() => nav.openDrawer?.()}>
+            <IconBtn
+              onPress={() => nav.openDrawer?.()}
+              style={styles.edgeAlignFixLeft}
+            >
               <Hamburger size={22} color={T.colors.text} />
             </IconBtn>
           )}
 
-          <View style={styles.centerSearch}>
-            {!t.searchOpen ? (
-              <IconBtn onPress={t.openSearch} style={styles.searchAnchor}>
-                <Search size={20} color={T.colors.text} />
-              </IconBtn>
-            ) : (
-              <IconBtn onPress={t.closeSearch} style={styles.searchAnchor}>
-                <X size={18} color={T.colors.text} />
-              </IconBtn>
-            )}
+          {showSearch ? (
+            <View style={styles.centerSearch}>
+              {!t.searchOpen ? (
+                <IconBtn onPress={t.openSearch} style={styles.searchAnchor}>
+                  <Search size={20} color={T.colors.text} />
+                </IconBtn>
+              ) : (
+                <IconBtn onPress={t.closeSearch} style={styles.searchAnchor}>
+                  <X size={18} color={T.colors.text} />
+                </IconBtn>
+              )}
 
-            <RNSimpleAnimated.View
-              pointerEvents={t.searchOpen ? "auto" : "none"}
-              style={[
-                styles.searchBar,
-                {
-                  opacity: t.fullProg,
-                  transform: [{ scaleX: t.fullProg }],
-                  backgroundColor: T.colors.accentMuted,
-                },
-              ]}
-            >
-              <TextInput
-                value={t.query}
-                onChangeText={t.setQuery}
-                placeholder={searchPlaceholder}
-                placeholderTextColor={T.colors.placeholder}
-                autoFocus={t.searchOpen}
+              <RNSimpleAnimated.View
+                pointerEvents={t.searchOpen ? "auto" : "none"}
                 style={[
-                  styles.searchInput,
-                  webNoOutline,
-                  { color: T.colors.text },
+                  styles.searchBar,
+                  {
+                    opacity: t.fullProg,
+                    transform: [{ scaleX: t.fullProg }],
+                    backgroundColor: T.colors.accentMuted,
+                  },
                 ]}
-                returnKeyType="search"
-                underlineColorAndroid="transparent"
-                selectionColor={T.colors.text}
-              />
-            </RNSimpleAnimated.View>
-          </View>
+              >
+                <TextInput
+                  value={t.query}
+                  onChangeText={t.setQuery}
+                  placeholder={searchPlaceholder}
+                  placeholderTextColor={T.colors.placeholder}
+                  autoFocus={t.searchOpen}
+                  style={[
+                    styles.searchInput,
+                    webNoOutline,
+                    { color: T.colors.text },
+                  ]}
+                  returnKeyType="search"
+                  underlineColorAndroid="transparent"
+                  selectionColor={T.colors.text}
+                />
+              </RNSimpleAnimated.View>
+            </View>
+          ) : (
+            <View style={{ flex: 1 }} />
+          )}
 
-          <View>{MoreMenus}</View>
+          {showMenu && (
+            <View style={styles.edgeAlignFixRight}>{MoreMenus}</View>
+          )}
         </View>
 
-        {mode !== "recycle" && !t.shouldHideFilters && (
+        {mode !== "recycle" && showFilters && !t.shouldHideFilters && (
           <View className="row2" style={styles.row2}>
             <View
               ref={t.filterAnchorRef}
@@ -357,15 +384,15 @@ export default function NotesToolbar(props: Props) {
                   {t.sortBy === "dateCreated"
                     ? "Date Created"
                     : t.sortBy === "dateModified"
-                    ? "Date Modified"
-                    : "Title"}
+                      ? "Date Modified"
+                      : "Title"}
                 </Text>
               </Pressable>
             </View>
 
             <Text style={{ color: T.colors.text }}>|</Text>
 
-            <IconBtn onPress={t.toggleSortDir}>
+            <IconBtn onPress={t.toggleSortDir} style={styles.edgeAlignFixRight}>
               {t.sortDir === "asc" ? (
                 <ArrowUp size={16} strokeWidth={1} color={T.colors.text} />
               ) : (
@@ -376,8 +403,7 @@ export default function NotesToolbar(props: Props) {
         )}
       </Animated.View>
 
-      {/* Filter popover */}
-      {mode !== "recycle" && (
+      {mode !== "recycle" && showFilters && (
         <PopoverMenu
           visible={t.filterOpen}
           onClose={() => t.setFilterOpen(false)}
@@ -402,7 +428,7 @@ export default function NotesToolbar(props: Props) {
           ]}
         />
       )}
-    </>
+    </View>
   );
 }
 
@@ -440,14 +466,15 @@ function radio(label: string, checked: boolean) {
 }
 
 const styles = StyleSheet.create({
-  fullWrap: { paddingTop: 50, marginBottom: 10 },
+  fullWrap: { paddingTop: 20, marginBottom: 10 },
   center: { alignItems: "center", marginBottom: 20 },
   row1: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    paddingHorizontal: 12,
   },
+  edgeAlignFixLeft: { marginLeft: -8 },
+  edgeAlignFixRight: { marginRight: -8 },
   centerSearch: {
     flex: 1,
     height: 36,
@@ -475,7 +502,7 @@ const styles = StyleSheet.create({
     right: 0,
     paddingTop: 12,
     paddingBottom: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 20,
     zIndex: 20,
   },
   stickyCenter: {
@@ -506,7 +533,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-end",
     marginTop: 5,
-    paddingHorizontal: 12,
     gap: 8,
   },
   allToggle: {

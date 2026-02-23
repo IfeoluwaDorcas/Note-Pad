@@ -2,7 +2,7 @@ import ReminderRow from "@/components/reminder/ReminderRow";
 import SectionHeader from "@/components/todo/SectionHeader";
 import type { Reminder } from "@/src/state/reminderStore";
 import React from "react";
-import { ListRenderItemInfo, StyleSheet, View } from "react-native";
+import { ListRenderItemInfo, View } from "react-native";
 import type { SharedValue } from "react-native-reanimated";
 import Animated, { useAnimatedScrollHandler } from "react-native-reanimated";
 
@@ -77,7 +77,7 @@ export default function ReminderList({
     ({ item }: ListRenderItemInfo<Row>) => {
       if (item.kind === "header") {
         return (
-          <View style={{ paddingHorizontal: 6, marginTop: 8 }}>
+          <View style={{ marginTop: 8 }}>
             <SectionHeader title={item.title} />
           </View>
         );
@@ -87,7 +87,7 @@ export default function ReminderList({
       const selected = selectedIds?.has(r.id) ?? false;
 
       return (
-        <View style={s.rowWrap}>
+        <View>
           <ReminderRow
             title={r.title}
             remindAtISO={r.remindAt}
@@ -116,29 +116,26 @@ export default function ReminderList({
       onPressItem,
       onToggleDone,
       mode,
-    ]
+    ],
   );
 
   const keyExtractor = React.useCallback((r: Row) => r.key, []);
 
   return (
-    <Animated.FlatList
-      data={rows}
-      keyExtractor={keyExtractor}
-      ListHeaderComponent={header}
-      renderItem={renderRow}
-      contentContainerStyle={[s.list, { paddingTop: contentTopInset }]}
-      onScroll={onScroll}
-      scrollEventThrottle={16}
-      removeClippedSubviews
-      initialNumToRender={16}
-      windowSize={10}
-      ItemSeparatorComponent={() => <View style={{ height: 4 }} />}
-    />
+    <View style={{ flex: 1, paddingHorizontal: 10 }}>
+      <Animated.FlatList
+        data={rows}
+        keyExtractor={keyExtractor}
+        ListHeaderComponent={header}
+        renderItem={renderRow}
+        contentContainerStyle={{ paddingTop: contentTopInset }}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        removeClippedSubviews
+        initialNumToRender={16}
+        windowSize={10}
+        ItemSeparatorComponent={() => <View style={{ height: 4 }} />}
+      />
+    </View>
   );
 }
-
-const s = StyleSheet.create({
-  list: { padding: 12, gap: 1 },
-  rowWrap: { paddingHorizontal: 6 },
-});

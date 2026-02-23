@@ -1,3 +1,4 @@
+// ColorPickerModal.tsx
 import { useAppTheme } from "@/providers/ThemeProvider";
 import React from "react";
 import {
@@ -18,6 +19,12 @@ type Props = {
   themeColors: { card: string; text: string; border: string };
 };
 
+const stripHexAlpha = (hex: string) => {
+  const h = hex.trim();
+  if (h[0] === "#" && h.length === 9) return h.slice(0, 7);
+  return h;
+};
+
 export default function ColorPickerModal({
   visible,
   onClose,
@@ -29,22 +36,20 @@ export default function ColorPickerModal({
   const { theme } = useAppTheme();
 
   const DEFAULTS = [
-    theme.tokens.colors.text,
-    "#000000",
-    "#1F2937",
-    "#374151",
-    "#6B7280",
-    "#EF4444",
-    "#F59E0B",
-    "#10B981",
-    "#3B82F6",
-    "#8B5CF6",
-    "#EC4899",
-    "#F9FAFB",
-    "#FFFFFF",
+    theme.tokens.colors.bg,
+    "#6B728040",
+    "#EF444440",
+    "#F59E0B40",
+    "#10B98140",
+    "#3B82F640",
+    "#8B5CF640",
+    "#EC489940",
+    "#FFFFFF40",
   ];
 
-  swatches = DEFAULTS;
+  const list = swatches ?? DEFAULTS;
+
+  const isForeColor = title.toLowerCase().includes("text");
 
   return (
     <Modal
@@ -66,25 +71,30 @@ export default function ColorPickerModal({
         ]}
       >
         <Text style={[styles.title, { color: themeColors.text }]}>{title}</Text>
+
         <ScrollView contentContainerStyle={styles.grid} horizontal>
-          {swatches.map((c) => (
-            <Pressable
-              key={c}
-              onPress={() => {
-                onPick(c);
-                onClose();
-              }}
-              accessibilityLabel={`Pick ${c}`}
-              hitSlop={8}
-            >
-              <View
-                style={[
-                  styles.swatch,
-                  { backgroundColor: c, borderColor: themeColors.border },
-                ]}
-              />
-            </Pressable>
-          ))}
+          {list.map((c) => {
+            const pickValue = isForeColor ? stripHexAlpha(c) : c;
+
+            return (
+              <Pressable
+                key={`${title}-${c}`}
+                onPress={() => {
+                  onPick(pickValue);
+                  onClose();
+                }}
+                accessibilityLabel={`Pick ${pickValue}`}
+                hitSlop={8}
+              >
+                <View
+                  style={[
+                    styles.swatch,
+                    { backgroundColor: c, borderColor: themeColors.border },
+                  ]}
+                />
+              </Pressable>
+            );
+          })}
         </ScrollView>
       </View>
     </Modal>

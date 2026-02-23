@@ -1,3 +1,4 @@
+import { Portal } from '@gorhom/portal';
 import { useAppTheme } from '@/providers/ThemeProvider';
 import { Share2, Trash2, X } from 'lucide-react-native';
 import React from 'react';
@@ -20,18 +21,19 @@ export default function SelectionBar({
   const T = theme.tokens;
 
   return (
-    <View
-      style={[
-        s.wrap,
-        {
-          backgroundColor: T.colors.card,
-          borderColor: T.colors.border,
-        },
-      ]}
-    >
-      <View style={[s.cell, s.textCell]}>
-        <Text style={[s.count, { color: T.colors.text }]}>{count} selected</Text>
-      </View>
+    <Portal>
+      <View
+        style={[
+          s.wrap,
+          {
+            backgroundColor: T.colors.card,
+            borderColor: T.colors.border,
+          },
+        ]}
+      >
+        <View style={[s.cell, s.textCell]}>
+          <Text style={[s.count, { color: T.colors.text }]}>{count} selected</Text>
+        </View>
 
       <View style={s.cell}>
         <Pressable
@@ -45,6 +47,7 @@ export default function SelectionBar({
         </Pressable>
       </View>
 
+      {/*
       <View style={s.cell}>
         <Pressable
           onPress={onShare}
@@ -58,6 +61,7 @@ export default function SelectionBar({
           <Share2 size={22} color={T.colors.textMuted} />
         </Pressable>
       </View>
+      */}
 
       <View style={s.cell}>
         <Pressable
@@ -70,7 +74,8 @@ export default function SelectionBar({
           <X size={22} color={T.colors.text} />
         </Pressable>
       </View>
-    </View>
+      </View>
+    </Portal>
   );
 }
 
@@ -80,8 +85,8 @@ const s = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 0,
+    paddingVertical: 16,
     borderTopWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',

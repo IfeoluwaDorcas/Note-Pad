@@ -3,9 +3,9 @@ import { StatusBar } from "expo-status-bar";
 import React, { ReactNode } from "react";
 import { View } from "react-native";
 import {
-    Edge,
-    SafeAreaView,
-    useSafeAreaInsets,
+  Edge,
+  SafeAreaView,
+  useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
 type Props = {
@@ -19,7 +19,7 @@ export default function Screen({ children, edges = ["top", "bottom"] }: Props) {
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={{ flex: 1, backgroundColor: c.bg }}>
+    <View style={{ flex: 1, backgroundColor: c.bg, paddingHorizontal: 20 }}>
       <View
         pointerEvents="none"
         style={{

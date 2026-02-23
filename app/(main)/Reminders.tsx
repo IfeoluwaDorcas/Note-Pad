@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useSharedValue } from "react-native-reanimated";
@@ -82,6 +82,21 @@ export default function Reminders() {
     setSelectionMode(false);
     setSelectedIds(new Set());
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => exitSelection();
+    }, [exitSelection])
+  );
+
+  useLayoutEffect(() => {
+    const sub = navigation.addListener("beforeRemove", (e) => {
+      if (!selectionMode) return;
+      e.preventDefault();
+      exitSelection();
+    });
+    return sub;
+  }, [navigation, selectionMode, exitSelection]);
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds((p) => {
       const n = new Set(p);
@@ -313,6 +328,7 @@ export default function Reminders() {
 
       <FAB onPress={() => setCreateOpen(true)} />
 
+      {/*
       <UndoSnackbar
         visible={snackOpen}
         message={
@@ -329,6 +345,7 @@ export default function Reminders() {
           setUndoIds([]);
         }}
       />
+      */}
     </Screen>
   );
 }
